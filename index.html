@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Keuangan</title>
     <style>
-        /* CSS tetap sama, tambah styling untuk saldo input */
+        /* CSS tetap sama, hapus .saldo-container, tambah styling untuk saldo */
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
@@ -87,26 +87,15 @@
             font-weight: bold;
             color: #FFD700;
         }
-        .saldo-container {
-            margin-bottom: 20px;
-            background: #ffffff;
-            padding: 10px;
-            border: 2px solid #FF0000;
-            border-radius: 5px;
-            color: #000000;
-            width: fit-content;
-        }
-        .saldo-container label {
-            display: inline-block;
-            width: 120px;
+        .saldo-display {
+            margin-bottom: 10px;
+            color: #FFD700;
             font-weight: bold;
         }
-        .saldo-container input {
-            padding: 5px;
-            border: 1px solid #FF0000;
-            border-radius: 5px;
-            width: 150px;
-            margin-right: 10px;
+        .saldo-display span {
+            color: #FF0000;
+            cursor: pointer;
+            text-decoration: underline;
         }
         .modal {
             display: none;
@@ -218,13 +207,6 @@
             .container {
                 grid-template-columns: 1fr;
             }
-            .saldo-container {
-                width: 100%;
-            }
-            .saldo-container input {
-                width: 100%;
-                margin-bottom: 10px;
-            }
         }
     </style>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
@@ -269,12 +251,9 @@
 
         <!-- Halaman Pengeluaran -->
         <div id="pengeluaranPage" class="page">
-            <div class="saldo-container">
-                <label>Saldo Awal Cash:</label>
-                <input type="number" id="saldoCash" min="0" onchange="updateSaldo('cash')">
-                <br>
-                <label>Saldo Awal Crypto:</label>
-                <input type="number" id="saldoCrypto" min="0" onchange="updateSaldo('crypto')">
+            <div class="saldo-display">
+                Saldo Awal <span onclick="editSaldo('cash')">Cash</span>: <span id="saldoCashDisplay">Rp0</span><br>
+                Saldo Awal <span onclick="editSaldo('crypto')">Crypto</span>: <span id="saldoCryptoDisplay">Rp0</span>
             </div>
             <div class="container" id="pengeluaranContainer"></div>
             <div class="year-total">
@@ -491,19 +470,23 @@
 
         // Update display saldo
         function updateSaldoDisplay() {
-            document.getElementById('saldoCash').value = saldoAwalData[currentYear].cash || 0;
-            document.getElementById('saldoCrypto').value = saldoAwalData[currentYear].crypto || 0;
+            document.getElementById('saldoCashDisplay').textContent = `Rp${(saldoAwalData[currentYear].cash || 0).toLocaleString('id-ID')}`;
+            document.getElementById('saldoCryptoDisplay').textContent = `Rp${(saldoAwalData[currentYear].crypto || 0).toLocaleString('id-ID')}`;
         }
 
-        // Update saldo saat input diubah
-        function updateSaldo(type) {
-            const value = parseInt(document.getElementById(`saldo${type.charAt(0).toUpperCase() + type.slice(1)}`).value) || 0;
-            if (value >= 0) {
-                saldoAwalData[currentYear][type] = value;
-                saveData();
-            } else {
-                alert('Saldo tidak boleh negatif!');
-                updateSaldoDisplay();
+        // Edit saldo dengan prompt
+        function editSaldo(type) {
+            const currentSaldo = saldoAwalData[currentYear][type] || 0;
+            const newSaldo = prompt(`Masukkan Saldo Awal ${type.charAt(0).toUpperCase() + type.slice(1)} (Rp):`, currentSaldo);
+            if (newSaldo !== null) {
+                const parsedSaldo = parseInt(newSaldo);
+                if (!isNaN(parsedSaldo) && parsedSaldo >= 0) {
+                    saldoAwalData[currentYear][type] = parsedSaldo;
+                    updateSaldoDisplay();
+                    saveData();
+                } else {
+                    alert('Masukkan angka yang valid (tidak boleh negatif)!');
+                }
             }
         }
 
@@ -531,12 +514,13 @@
 
         // Hitung total berdasarkan tipe
         function calculateTotal(monthData, type, tipe = null) {
+            if (!monthData || !Array.isArray(monthData)) return 0;
             if (type === 'pemasukan') {
-                return monthData.reduce((sum, item) => sum + item.pemasukan, 0);
+                return monthData.reduce((sum, item) => sum + (item.pemasukan || 0), 0);
             } else {
                 return monthData.reduce((sum, item) => {
                     if (tipe && item.tipe !== tipe) return sum;
-                    return sum + item.jumlah;
+                    return sum + (item.jumlah || 0);
                 }, 0);
             }
         }
@@ -838,11 +822,15 @@
             const isPemasukan = currentPage === 'pemasukan';
             const monthsToDownload = selectedMonths.includes('all') ? months : selectedMonths;
 
-            console.log('Generating PDF for:', currentPage, 'Months:', monthsToDownload);
+            // Debugging: Log data yang akan dicetak ke PDF
+            console.log('Generating PDF for:', currentPage);
+            console.log('Selected Months:', monthsToDownload);
             console.log('Data:', data);
 
             const element = document.createElement('div');
             element.style.padding = '20px';
+            element.style.backgroundColor = '#ffffff';
+            element.style.color = '#000000';
             element.innerHTML = `<h1 style="color: #000000;">${isPemasukan ? 'Pemasukan' : 'Pengeluaran'} ${currentYear}</h1>`;
 
             if (!isPemasukan) {
@@ -859,10 +847,10 @@
                 const tableContent = monthData.length > 0
                     ? monthData.map(item => `
                         <tr>
-                            <td style="border: 1px solid #FF0000; padding: 8px;">${isPemasukan ? item.nama : item.kategori}</td>
-                            <td style="border: 1px solid #FF0000; padding: 8px;">${item.tanggal}</td>
-                            ${!isPemasukan ? `<td style="border: 1px solid #FF0000; padding: 8px;">${item.tipe}</td>` : ''}
-                            <td style="border: 1px solid #FF0000; padding: 8px;">Rp${(isPemasukan ? item.pemasukan : item.jumlah).toLocaleString('id-ID')}</td>
+                            <td style="border: 1px solid #FF0000; padding: 8px;">${isPemasukan ? item.nama : item.kategori || '-'}</td>
+                            <td style="border: 1px solid #FF0000; padding: 8px;">${item.tanggal || '-'}</td>
+                            ${!isPemasukan ? `<td style="border: 1px solid #FF0000; padding: 8px;">${item.tipe || '-'}</td>` : ''}
+                            <td style="border: 1px solid #FF0000; padding: 8px;">Rp${(isPemasukan ? item.pemasukan : item.jumlah || 0).toLocaleString('id-ID')}</td>
                         </tr>
                     `).join('')
                     : `<tr><td colspan="${isPemasukan ? 3 : 4}" style="color: #FF0000; text-align: center;">Belum ada data</td></tr>`;
@@ -897,15 +885,18 @@
                 element.innerHTML += cardHtml;
             });
 
-            const opt = {
-                margin: 1,
-                filename: `${isPemasukan ? 'Pemasukan' : 'Pengeluaran'}_${currentYear}_${selectedMonths.includes('all') ? 'Semua' : selectedMonths.join('-')}.pdf`,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2 },
-                jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
-            };
-            html2pdf().from(element).set(opt).save();
-            closeDownloadModal();
+            // Tambah delay kecil untuk memastikan elemen ter-render
+            setTimeout(() => {
+                const opt = {
+                    margin: 1,
+                    filename: `${isPemasukan ? 'Pemasukan' : 'Pengeluaran'}_${currentYear}_${selectedMonths.includes('all') ? 'Semua' : selectedMonths.join('-')}.pdf`,
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { scale: 2 },
+                    jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+                };
+                html2pdf().from(element).set(opt).save();
+                closeDownloadModal();
+            }, 100); // Delay 100ms
         }
 
         // Modal untuk tambah/edit roadmap
