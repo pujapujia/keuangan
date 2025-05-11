@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Keuangan</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #000000; /* Hitam */
+            color: #ffffff; /* Putih untuk teks */
+        }
+        h1 {
+            text-align: center;
+            color: #FFD700; /* Emas */
+        }
+        .nav {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .nav button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: #FF0000; /* Merah */
+            color: #ffffff;
+            font-size: 1em;
+        }
+        .nav button.active {
+            background-color: #FFD700; /* Emas */
+            color: #000000;
+        }
+        .container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+        .card {
+            background: #ffffff; /* Putih untuk kartu */
+            border: 2px solid #FF0000; /* Merah untuk border */
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(255, 0, 0, 0.3);
+            padding: 20px;
+            color: #000000; /* Hitam untuk teks dalam kartu */
+        }
+        .card h2 {
+            color: #000000; /* Hitam untuk judul bulan */
+            font-weight: bold; /* Bold */
+            text-align: center;
+        }
+        .card .saldo-awal {
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #FFD700; /* Emas untuk saldo awal */
+        }
+        .card .edit-saldo-btn {
+            background-color: #FFD700; /* Emas untuk tombol edit saldo */
+            color: #000000;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-left: 10px;
+            font-size: 0.9em;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+        }
+        th, td {
+            border: 1px solid #FF0000; /* Merah untuk border tabel */
+            padding: 8px;
+            text-align: left;
+            cursor: pointer;
+        }
+        th {
+            background-color: #FFD700; /* Emas untuk header tabel */
+            color: #000000; /* Hitam untuk teks header */
+        }
+        td:hover {
+            background-color: #FF0000; /* Merah saat hover */
+            color: #ffffff; /* Putih untuk teks saat hover */
+        }
+        .total, .sisa-saldo {
+            font-weight: bold;
+            margin-top: 10px;
+            color: #000000; /* Hitam untuk teks total dan sisa saldo */
+        }
+        .total span, .sisa-saldo span {
+            color: #000000; /* Hitam untuk nilai total dan sisa saldo */
+        }
+        .year-total {
+            text-align: center;
+            margin: 20px 0;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #FFD700; /* Emas untuk total tahunan */
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7); /* Hitam transparan */
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: #ffffff; /* Putih untuk modal */
+            padding: 20px;
+            border: 2px solid #FF0000; /* Merah untuk border modal */
+            border-radius: 5px;
+            width: 90%;
+            max-width: 400px;
+            color: #000000; /* Hitam untuk teks modal */
+        }
+        .modal-content input, .modal-content select {
+            width: 100%;
+            margin: 10px 0;
+            padding: 8px;
+            border: 1px solid #FF0000; /* Merah untuk border input */
+            box-sizing: border-box;
+        }
+        button {
+            padding: 8px 16px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .save-btn {
+            background-color: #FF0000; /* Merah untuk tombol simpan */
+            color: #ffffff;
+        }
+        .cancel-btn {
+            background-color: #FFD700; /* Emas untuk tombol batal */
+            color: #000000;
+        }
+        .delete-btn {
+            background-color: #000000; /* Hitam untuk tombol hapus */
+            color: #ffffff;
+        }
+        .add-btn {
+            background-color: #FF0000; /* Merah untuk tombol tambah */
+            color: #ffffff;
+            display: block;
+            margin: 10px auto;
+        }
+        .download-btn {
+            background-color: #FFD700; /* Emas untuk tombol download */
+            color: #000000;
+            margin: 10px auto;
+            display: block;
+        }
+        .empty-message {
+            text-align: center;
+            color: #FF0000; /* Merah untuk pesan kosong */
+            margin: 10px 0;
+        }
+        .page {
+            display: none;
+        }
+        .page.active {
+            display: block;
+        }
+        .login-page, .roadmap-page {
+            max-width: 400px;
+            margin: 50px auto;
+            background: #ffffff;
+            padding: 20px;
+            border: 2px solid #FF0000;
+            border-radius: 8px;
+            color: #000000;
+        }
+        .roadmap-container {
+            padding: 20px;
+        }
+        .roadmap-item {
+            margin: 10px 0;
+            padding: 10px;
+            background: #ffffff;
+            border: 1px solid #FF0000;
+            border-radius: 5px;
+            color: #000000;
+        }
+        .roadmap-item h3 {
+            color: #000000;
+            font-weight: bold;
+        }
+        .year-selector {
+            text-align: center;
+            margin: 10px 0;
+        }
+        .year-selector select {
+            padding: 5px;
+            border: 1px solid #FF0000;
+            border-radius: 5px;
+            background: #ffffff;
+            color: #000000;
+        }
+        @media (max-width: 600px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body>
+    <!-- Halaman Login -->
+    <div id="loginPage" class="login-page">
+        <h2 style="color: #000000; text-align: center;">Login</h2>
+        <input type="text" id="username" placeholder="Username">
+        <input type="password" id="password" placeholder="Password">
+        <button class="save-btn" onclick="login()">Login</button>
+    </div>
+
+    <!-- Halaman Utama -->
+    <div id="mainPage" style="display: none;">
+        <h1>Keuangan <span id="currentYear">2025</span></h1>
+        <div class="year-selector">
+            <select id="yearSelect" onchange="changeYear()">
+                <option value="2025">2025</option>
+                <option value="2026">2026</option>
+            </select>
+        </div>
+        <div class="nav">
+            <button id="gajiBtn" class="active" onclick="showPage('gaji')">Daftar Gaji</button>
+            <button id="pengeluaranBtn" onclick="showPage('pengeluaran')">Daftar Pengeluaran</button>
+            <button id="roadmapBtn" onclick="showPage('roadmap')">Roadmap Hidup</button>
+        </div>
+
+        <!-- Halaman Daftar Gaji -->
+        <div id="gajiPage" class="page active">
+            <div class="container" id="gajiContainer"></div>
+            <div class="year-total">Total Gaji Tahun <span id="gajiYear">2025</span>: <span id="gajiYearTotal">Rp0</span></div>
+            <button class="download-btn" onclick="openDownloadModal('gaji')">Download PDF</button>
+        </div>
+
+        <!-- Halaman Daftar Pengeluaran -->
+        <div id="pengeluaranPage" class="page">
+            <div class="container" id="pengeluaranContainer"></div>
+            <div class="year-total">Total Pengeluaran Tahun <span id="pengeluaranYear">2025</span>: <span id="pengeluaranYearTotal">Rp0</span></div>
+            <button class="download-btn" onclick="openDownloadModal('pengeluaran')">Download PDF</button>
+        </div>
+
+        <!-- Halaman Roadmap Hidup -->
+        <div id="roadmapPage" class="page">
+            <div class="roadmap-container" id="roadmapContainer"></div>
+            <button class="add-btn" onclick="openRoadmapModal()">Tambah Rencana</button>
+        </div>
+    </div>
+
+    <!-- Modal untuk Edit/Tambah Data -->
+    <div class="modal" id="editModal">
+        <div class="modal-content">
+            <h3 id="modalTitle">Edit Data</h3>
+            <input type="text" id="editField1" placeholder="Nama/Kategori">
+            <input type="number" id="editTanggal" placeholder="Tanggal" min="1" max="31">
+            <input type="number" id="editField2" placeholder="Gaji/Jumlah (Rp)">
+            <button class="save-btn" onclick="saveEdit()">Simpan</button>
+            <button class="delete-btn" id="deleteBtn" onclick="deleteEntry()">Hapus</button>
+            <button class="cancel-btn" onclick="closeModal()">Batal</button>
+        </div>
+    </div>
+
+    <!-- Modal untuk Edit Saldo Awal -->
+    <div class="modal" id="editSaldoModal">
+        <div class="modal-content">
+            <h3>Edit Saldo Awal</h3>
+            <input type="number" id="editSaldoAwal" placeholder="Saldo Awal (Rp)">
+            <button class="save-btn" onclick="saveSaldoAwal()">Simpan</button>
+            <button class="cancel-btn" onclick="closeSaldoModal()">Batal</button>
+        </div>
+    </div>
+
+    <!-- Modal untuk Download PDF -->
+    <div class="modal" id="downloadModal">
+        <div class="modal-content">
+            <h3>Pilih Bulan untuk Download</h3>
+            <select id="downloadMonth" multiple>
+                <option value="all">Semua Bulan</option>
+                <option value="Januari">Januari</option>
+                <option value="Februari">Februari</option>
+                <option value="Maret">Maret</option>
+                <option value="April">April</option>
+                <option value="Mei">Mei</option>
+                <option value="Juni">Juni</option>
+                <option value="Juli">Juli</option>
+                <option value="Agustus">Agustus</option>
+                <option value="September">September</option>
+                <option value="Oktober">Oktober</option>
+                <option value="November">November</option>
+                <option value="Desember">Desember</option>
+            </select>
+            <button class="save-btn" onclick="downloadPDF()">Download</button>
+            <button class="cancel-btn" onclick="closeDownloadModal()">Batal</button>
+        </div>
+    </div>
+
+    <!-- Modal untuk Tambah/Edit Roadmap -->
+    <div class="modal" id="roadmapModal">
+        <div class="modal-content">
+            <h3>Tambah/Edit Rencana</h3>
+            <select id="roadmapMonth">
+                <option value="Januari">Januari</option>
+                <option value="Februari">Februari</option>
+                <option value="Maret">Maret</option>
+                <option value="April">April</option>
+                <option value="Mei">Mei</option>
+                <option value="Juni">Juni</option>
+                <option value="Juli">Juli</option>
+                <option value="Agustus">Agustus</option>
+                <option value="September">September</option>
+                <option value="Oktober">Oktober</option>
+                <option value="November">November</option>
+                <option value="Desember">Desember</option>
+            </select>
+            <input type="text" id="roadmapPlan" placeholder="Rencana (contoh: Beli mobil)">
+            <button class="save-btn" onclick="saveRoadmap()">Simpan</button>
+            <button class="delete-btn" id="roadmapDeleteBtn" onclick="deleteRoadmap()">Hapus</button>
+            <button class="cancel-btn" onclick="closeRoadmapModal()">Batal</button>
+        </div>
+    </div>
+
+    <script>
+        // Firebase konfigurasi (ganti dengan config Anda)
+        const firebaseConfig = {
+            apiKey: "AIzaSyBITs7xek4i4PRZKAWYzAh6EEsTEPqn6V8",
+            authDomain: "keuangan-e147f.firebaseapp.com",
+            databaseURL: "https://keuangan-e147f-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "keuangan-e147f",
+            storageBucket: "keuangan-e147f.firebasestorage.app",
+            messagingSenderId: "878121948921",
+            appId: "1:878121948921:web:2e1bcd87a7910e1592b428"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.database();
+
+        // Data dan state
+        const months = [
+            'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+            'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+        ];
+        let gajiData = {};
+        let pengeluaranData = {};
+        let saldoAwalData = {};
+        let roadmapData = {};
+        let currentYear = '2025';
+        let currentUser = null;
+        let currentRow = null;
+        let currentMonth = null;
+        let currentIndex = null;
+        let isAdding = false;
+        let currentPage = 'gaji';
+        let currentRoadmapIndex = null;
+
+        // Inisialisasi data untuk tahun tertentu
+        function initializeData(year) {
+            gajiData[year] = gajiData[year] || months.reduce((acc, month) => {
+                acc[month] = [];
+                return acc;
+            }, {});
+            pengeluaranData[year] = pengeluaranData[year] || months.reduce((acc, month) => {
+                acc[month] = [];
+                return acc;
+            }, {});
+            saldoAwalData[year] = saldoAwalData[year] || months.reduce((acc, month) => {
+                acc[month] = month === 'Januari' ? 5000000 : 0;
+                return acc;
+            }, {});
+            roadmapData[year] = roadmapData[year] || months.reduce((acc, month) => {
+                acc[month] = [];
+                return acc;
+            }, {});
+        }
+
+        // Login
+        function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            auth.signInWithEmailAndPassword(username, password)
+                .then(userCredential => {
+                    currentUser = userCredential.user;
+                    document.getElementById('loginPage').style.display = 'none';
+                    document.getElementById('mainPage').style.display = 'block';
+                    initializeData(currentYear);
+                    loadData();
+                })
+                .catch(error => {
+                    alert('Login gagal: ' + error.message);
+                });
+        }
+
+        // Load data dari Firebase
+        function loadData() {
+            db.ref(`users/${currentUser.uid}/data/${currentYear}`).once('value', snapshot => {
+                const data = snapshot.val() || {};
+                gajiData[currentYear] = data.gaji || months.reduce((acc, month) => {
+                    acc[month] = [];
+                    return acc;
+                }, {});
+                pengeluaranData[currentYear] = data.pengeluaran || months.reduce((acc, month) => {
+                    acc[month] = [];
+                    return acc;
+                }, {});
+                saldoAwalData[currentYear] = data.saldoAwal || months.reduce((acc, month) => {
+                    acc[month] = month === 'Januari' ? 5000000 : 0;
+                    return acc;
+                }, {});
+                roadmapData[currentYear] = data.roadmap || months.reduce((acc, month) => {
+                    acc[month] = [];
+                    return acc;
+                }, {});
+                renderGajiCards();
+            });
+        }
+
+        // Simpan data ke Firebase
+        function saveData() {
+            if (currentUser) {
+                db.ref(`users/${currentUser.uid}/data/${currentYear}`).set({
+                    gaji: gajiData[currentYear],
+                    pengeluaran: pengeluaranData[currentYear],
+                    saldoAwal: saldoAwalData[currentYear],
+                    roadmap: roadmapData[currentYear]
+                });
+            }
+        }
+
+        // Ganti tahun
+        function changeYear() {
+            currentYear = document.getElementById('yearSelect').value;
+            document.getElementById('currentYear').textContent = currentYear;
+            document.getElementById('gajiYear').textContent = currentYear;
+            document.getElementById('pengeluaranYear').textContent = currentYear;
+            initializeData(currentYear);
+            loadData();
+        }
+
+        // Navigasi halaman
+        function showPage(page) {
+            currentPage = page;
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(`${page}Page`).classList.add('active');
+            document.querySelectorAll('.nav button').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`${page}Btn`).classList.add('active');
+            if (page === 'gaji') renderGajiCards();
+            else if (page === 'pengeluaran') renderPengeluaranCards();
+            else renderRoadmap();
+        }
+
+        // Hitung total
+        function calculateTotal(monthData, type) {
+            return monthData.reduce((sum, item) => sum + (type === 'gaji' ? item.gaji : item.jumlah), 0);
+        }
+
+        // Hitung saldo awal
+        function calculateSaldoAwal(month) {
+            if (month === 'Januari') {
+                return saldoAwalData[currentYear][month];
+            }
+            const monthIndex = months.indexOf(month);
+            const prevMonth = months[monthIndex - 1];
+            const prevSisaSaldo = saldoAwalData[currentYear][prevMonth] - calculateTotal(pengeluaranData[currentYear][prevMonth], 'pengeluaran');
+            return (prevSisaSaldo < 0 ? 0 : prevSisaSaldo) + calculateTotal(gajiData[currentYear][month], 'gaji');
+        }
+
+        // Render kartu untuk Daftar Gaji
+        function renderGajiCards() {
+            const container = document.getElementById('gajiContainer');
+            container.innerHTML = '';
+            months.forEach(month => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.id = `gaji-${month.toLowerCase()}`;
+                const tableContent = gajiData[currentYear][month].length > 0
+                    ? gajiData[currentYear][month].map((item, index) => `
+                        <tr data-month="${month}" data-index="${index}">
+                            <td>${item.nama}</td>
+                            <td>${item.tanggal}</td>
+                            <td>Rp${item.gaji.toLocaleString('id-ID')}</td>
+                        </tr>
+                    `).join('')
+                    : '<tr><td colspan="3" class="empty-message">Belum ada data</td></tr>';
+                card.innerHTML = `
+                    <h2>${month.toUpperCase()}</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Nama</th>
+                                <th>Tanggal</th>
+                                <th>Gaji</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${tableContent}
+                        </tbody>
+                    </table>
+                    <div class="total">Total: <span>Rp${calculateTotal(gajiData[currentYear][month], 'gaji').toLocaleString('id-ID')}</span></div>
+                    <button class="add-btn" onclick="openAddModal('${month}', 'gaji')">Tambah Data</button>
+                `;
+                container.appendChild(card);
+            });
+
+            document.querySelectorAll('#gajiContainer tbody tr:not(.empty-message)').forEach(row => {
+                row.addEventListener('click', () => {
+                    currentRow = row;
+                    currentMonth = row.dataset.month;
+                    currentIndex = row.dataset.index;
+                    openModal(row, false, 'gaji');
+                });
+            });
+
+            updateGajiYearTotal();
+            if (currentPage === 'pengeluaran') renderPengeluaranCards();
+        }
+
+        // Render kartu untuk Daftar Pengeluaran
+        function renderPengeluaranCards() {
+            const container = document.getElementById('pengeluaranContainer');
+            container.innerHTML = '';
+            months.forEach(month => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.id = `pengeluaran-${month.toLowerCase()}`;
+                const tableContent = pengeluaranData[currentYear][month].length > 0
+                    ? pengeluaranData[currentYear][month].map((item, index) => `
+                        <tr data-month="${month}" data-index="${index}">
+                            <td>${item.kategori}</td>
+                            <td>${item.tanggal}</td>
+                            <td>Rp${item.jumlah.toLocaleString('id-ID')}</td>
+                        </tr>
+                    `).join('')
+                    : '<tr><td colspan="3" class="empty-message">Belum ada pengeluaran</td></tr>';
+                const totalPengeluaran = calculateTotal(pengeluaranData[currentYear][month], 'pengeluaran');
+                const saldoAwal = calculateSaldoAwal(month);
+                const sisaSaldo = saldoAwal - totalPengeluaran;
+                card.innerHTML = `
+                    <h2>${month.toUpperCase()}</h2>
+                    <div class="saldo-awal">Saldo Awal: Rp${saldoAwal.toLocaleString('id-ID')}<button class="edit-saldo-btn" onclick="openSaldoModal('${month}')">Edit</button></div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Kategori</th>
+                                <th>Tanggal</th>
+                                <th>Jumlah</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${tableContent}
+                        </tbody>
+                    </table>
+                    <div class="total">Total Pengeluaran: <span>Rp${totalPengeluaran.toLocaleString('id-ID')}</span></div>
+                    <div class="sisa-saldo">Sisa Saldo: <span>Rp${sisaSaldo.toLocaleString('id-ID')}</span></div>
+                    <button class="add-btn" onclick="openAddModal('${month}', 'pengeluaran')">Tambah Pengeluaran</button>
+                `;
+                container.appendChild(card);
+            });
+
+            document.querySelectorAll('#pengeluaranContainer tbody tr:not(.empty-message)').forEach(row => {
+                row.addEventListener('click', () => {
+                    currentRow = row;
+                    currentMonth = row.dataset.month;
+                    currentIndex = row.dataset.index;
+                    openModal(row, false, 'pengeluaran');
+                });
+            });
+
+            updatePengeluaranYearTotal();
+        }
+
+        // Render Roadmap Hidup
+        function renderRoadmap() {
+            const container = document.getElementById('roadmapContainer');
+            container.innerHTML = '';
+            months.forEach(month => {
+                const plans = roadmapData[currentYear][month];
+                const planContent = plans.length > 0
+                    ? plans.map((plan, index) => `
+                        <div class="roadmap-item" data-month="${month}" data-index="${index}">
+                            <h3>${month} ${currentYear}</h3>
+                            <p>${plan.plan}</p>
+                        </div>
+                    `).join('')
+                    : `<div class="roadmap-item"><p class="empty-message">Belum ada rencana untuk ${month}</p></div>`;
+                container.innerHTML += planContent;
+            });
+
+            document.querySelectorAll('.roadmap-item:not(.empty-message)').forEach(item => {
+                item.addEventListener('click', () => {
+                    currentMonth = item.dataset.month;
+                    currentRoadmapIndex = item.dataset.index;
+                    openRoadmapModal(item);
+                });
+            });
+        }
+
+        // Update total tahunan
+        function updateGajiYearTotal() {
+            const yearTotal = months.reduce((sum, month) => sum + calculateTotal(gajiData[currentYear][month], 'gaji'), 0);
+            document.getElementById('gajiYearTotal').textContent = `Rp${yearTotal.toLocaleString('id-ID')}`;
+        }
+
+        function updatePengeluaranYearTotal() {
+            const yearTotal = months.reduce((sum, month) => sum + calculateTotal(pengeluaranData[currentYear][month], 'pengeluaran'), 0);
+            document.getElementById('pengeluaranYearTotal').textContent = `Rp${yearTotal.toLocaleString('id-ID')}`;
+        }
+
+        // Modal untuk edit atau tambah data
+        function openModal(row, isAdd, page) {
+            isAdding = isAdd;
+            currentPage = page;
+            document.getElementById('modalTitle').textContent = isAdd 
+                ? (page === 'gaji' ? 'Tambah Data' : 'Tambah Pengeluaran') 
+                : (page === 'gaji' ? 'Edit Data' : 'Edit Pengeluaran');
+            document.getElementById('deleteBtn').style.display = isAdd ? 'none' : 'inline-block';
+            document.getElementById('editField1').placeholder = page === 'gaji' ? 'Nama' : 'Kategori';
+            document.getElementById('editField2').placeholder = page === 'gaji' ? 'Gaji (Rp)' : 'Jumlah (Rp)';
+            if (isAdd) {
+                document.getElementById('editField1').value = '';
+                document.getElementById('editTanggal').value = '';
+                document.getElementById('editField2').value = '';
+            } else {
+                const field1 = row.cells[0].textContent;
+                const tanggal = row.cells[1].textContent;
+                const field2 = parseInt(row.cells[2].textContent.replace('Rp', '').replace(/\./g, ''));
+                document.getElementById('editField1').value = field1;
+                document.getElementById('editTanggal').value = tanggal;
+                document.getElementById('editField2').value = field2;
+            }
+            document.getElementById('editModal').style.display = 'flex';
+        }
+
+        function openAddModal(month, page) {
+            currentMonth = month;
+            openModal(null, true, page);
+        }
+
+        function closeModal() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+
+        function saveEdit() {
+            const field1 = document.getElementById('editField1').value.trim();
+            const tanggal = parseInt(document.getElementById('editTanggal').value);
+            const field2 = parseInt(document.getElementById('editField2').value);
+
+            if (field1 && tanggal >= 1 && tanggal <= 31 && field2 > 0) {
+                const data = currentPage === 'gaji' ? gajiData[currentYear] : pengeluaranData[currentYear];
+                const newEntry = currentPage === 'gaji' 
+                    ? { nama: field1, tanggal, gaji: field2 }
+                    : { kategori: field1, tanggal, jumlah: field2 };
+                if (isAdding) {
+                    data[currentMonth].push(newEntry);
+                } else {
+                    data[currentMonth][currentIndex] = newEntry;
+                }
+                if (currentPage === 'gaji') renderGajiCards();
+                else renderPengeluaranCards();
+                saveData();
+                closeModal();
+            } else {
+                alert('Isi semua kolom dengan data yang valid!');
+            }
+        }
+
+        function deleteEntry() {
+            if (confirm('Yakin ingin menghapus data ini?')) {
+                const data = currentPage === 'gaji' ? gajiData[currentYear] : pengeluaranData[currentYear];
+                data[currentMonth].splice(currentIndex, 1);
+                if (currentPage === 'gaji') renderGajiCards();
+                else renderPengeluaranCards();
+                saveData();
+                closeModal();
+            }
+        }
+
+        // Modal untuk edit saldo awal
+        function openSaldoModal(month) {
+            currentMonth = month;
+            document.getElementById('editSaldoAwal').value = saldoAwalData[currentYear][month];
+            document.getElementById('editSaldoModal').style.display = 'flex';
+        }
+
+        function closeSaldoModal() {
+            document.getElementById('editSaldoModal').style.display = 'none';
+        }
+
+        function saveSaldoAwal() {
+            const saldoAwal = parseInt(document.getElementById('editSaldoAwal').value);
+            if (saldoAwal >= 0) {
+                saldoAwalData[currentYear][currentMonth] = saldoAwal;
+                renderPengeluaranCards();
+                saveData();
+                closeSaldoModal();
+            } else {
+                alert('Masukkan saldo awal yang valid (minimal 0)!');
+            }
+        }
+
+        // Modal untuk download PDF
+        function openDownloadModal(page) {
+            currentPage = page;
+            document.getElementById('downloadModal').style.display = 'flex';
+        }
+
+        function closeDownloadModal() {
+            document.getElementById('downloadModal').style.display = 'none';
+        }
+
+        function downloadPDF() {
+            const selectedMonths = Array.from(document.getElementById('downloadMonth').selectedOptions).map(option => option.value);
+            const data = currentPage === 'gaji' ? gajiData[currentYear] : pengeluaranData[currentYear];
+            const isGaji = currentPage === 'gaji';
+            const monthsToDownload = selectedMonths.includes('all') ? months : selectedMonths;
+
+            const element = document.createElement('div');
+            element.style.padding = '20px';
+            element.innerHTML = `<h1 style="color: #000000;">${isGaji ? 'Daftar Gaji' : 'Daftar Pengeluaran'} ${currentYear}</h1>`;
+
+            monthsToDownload.forEach(month => {
+                const tableContent = data[month].length > 0
+                    ? data[month].map(item => `
+                        <tr>
+                            <td style="border: 1px solid #FF0000; padding: 8px;">${isGaji ? item.nama : item.kategori}</td>
+                            <td style="border: 1px solid #FF0000; padding: 8px;">${item.tanggal}</td>
+                            <td style="border: 1px solid #FF0000; padding: 8px;">Rp${(isGaji ? item.gaji : item.jumlah).toLocaleString('id-ID')}</td>
+                        </tr>
+                    `).join('')
+                    : '<tr><td colspan="3" style="color: #FF0000; text-align: center;">Belum ada data</td></tr>';
+
+                const total = calculateTotal(data[month], isGaji ? 'gaji' : 'pengeluaran');
+                const cardHtml = `
+                    <div style="margin-bottom: 20px;">
+                        <h2 style="color: #000000;">${month.toUpperCase()}</h2>
+                        ${!isGaji ? `<p style="color: #FFD700;">Saldo Awal: Rp${calculateSaldoAwal(month).toLocaleString('id-ID')}</p>` : ''}
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr style="background-color: #FFD700;">
+                                    <th style="border: 1px solid #FF0000; padding: 8px;">${isGaji ? 'Nama' : 'Kategori'}</th>
+                                    <th style="border: 1px solid #FF0000; padding: 8px;">Tanggal</th>
+                                    <th style="border: 1px solid #FF0000; padding: 8px;">${isGaji ? 'Gaji' : 'Jumlah'}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${tableContent}
+                            </tbody>
+                        </table>
+                        <p style="color: #000000; font-weight: bold;">${isGaji ? 'Total' : 'Total Pengeluaran'}: Rp${total.toLocaleString('id-ID')}</p>
+                        ${!isGaji ? `<p style="color: #000000; font-weight: bold;">Sisa Saldo: Rp${(calculateSaldoAwal(month) - total).toLocaleString('id-ID')}</p>` : ''}
+                    </div>
+                `;
+                element.innerHTML += cardHtml;
+            });
+
+            const opt = {
+                margin: 1,
+                filename: `${isGaji ? 'Gaji' : 'Pengeluaran'}_${currentYear}_${selectedMonths.includes('all') ? 'Semua' : selectedMonths.join('-')}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+            html2pdf().from(element).set(opt).save();
+            closeDownloadModal();
+        }
+
+        // Modal untuk tambah/edit roadmap
+        function openRoadmapModal(item = null) {
+            document.getElementById('roadmapDeleteBtn').style.display = item ? 'inline-block' : 'none';
+            if (item) {
+                currentMonth = item.dataset.month;
+                currentRoadmapIndex = item.dataset.index;
+                document.getElementById('roadmapMonth').value = currentMonth;
+                document.getElementById('roadmapPlan').value = roadmapData[currentYear][currentMonth][currentRoadmapIndex].plan;
+            } else {
+                document.getElementById('roadmapMonth').value = 'Januari';
+                document.getElementById('roadmapPlan').value = '';
+            }
+            document.getElementById('roadmapModal').style.display = 'flex';
+        }
+
+        function closeRoadmapModal() {
+            document.getElementById('roadmapModal').style.display = 'none';
+        }
+
+        function saveRoadmap() {
+            const month = document.getElementById('roadmapMonth').value;
+            const plan = document.getElementById('roadmapPlan').value.trim();
+            if (plan) {
+                if (currentRoadmapIndex !== null) {
+                    roadmapData[currentYear][month][currentRoadmapIndex] = { plan };
+                } else {
+                    roadmapData[currentYear][month].push({ plan });
+                }
+                renderRoadmap();
+                saveData();
+                closeRoadmapModal();
+            } else {
+                alert('Masukkan rencana!');
+            }
+        }
+
+        function deleteRoadmap() {
+            if (confirm('Yakin ingin menghapus rencana ini?')) {
+                roadmapData[currentYear][currentMonth].splice(currentRoadmapIndex, 1);
+                renderRoadmap();
+                saveData();
+                closeRoadmapModal();
+            }
+        }
+    </script>
+</body>
+</html>
