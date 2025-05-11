@@ -5,15 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Keuangan</title>
     <style>
+        /* CSS tetap sama seperti sebelumnya */
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
-            background-color: #000000; /* Hitam */
-            color: #ffffff; /* Putih untuk teks */
+            background-color: #000000;
+            color: #ffffff;
         }
         h1 {
             text-align: center;
-            color: #FFD700; /* Emas */
+            color: #FFD700;
         }
         .nav {
             text-align: center;
@@ -25,12 +26,12 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            background-color: #FF0000; /* Merah */
+            background-color: #FF0000;
             color: #ffffff;
             font-size: 1em;
         }
         .nav button.active {
-            background-color: #FFD700; /* Emas */
+            background-color: #FFD700;
             color: #000000;
         }
         .container {
@@ -40,25 +41,25 @@
             padding: 20px;
         }
         .card {
-            background: #ffffff; /* Putih untuk kartu */
-            border: 2px solid #FF0000; /* Merah untuk border */
+            background: #ffffff;
+            border: 2px solid #FF0000;
             border-radius: 8px;
             box-shadow: 0 2px 5px rgba(255, 0, 0, 0.3);
             padding: 20px;
-            color: #000000; /* Hitam untuk teks dalam kartu */
+            color: #000000;
         }
         .card h2 {
-            color: #000000; /* Hitam untuk judul bulan */
-            font-weight: bold; /* Bold */
+            color: #000000;
+            font-weight: bold;
             text-align: center;
         }
         .card .saldo-awal {
             margin-bottom: 10px;
             font-weight: bold;
-            color: #FFD700; /* Emas untuk saldo awal */
+            color: #FFD700;
         }
         .card .edit-saldo-btn {
-            background-color: #FFD700; /* Emas untuk tombol edit saldo */
+            background-color: #FFD700;
             color: #000000;
             padding: 5px 10px;
             border: none;
@@ -73,33 +74,33 @@
             margin-bottom: 10px;
         }
         th, td {
-            border: 1px solid #FF0000; /* Merah untuk border tabel */
+            border: 1px solid #FF0000;
             padding: 8px;
             text-align: left;
             cursor: pointer;
         }
         th {
-            background-color: #FFD700; /* Emas untuk header tabel */
-            color: #000000; /* Hitam untuk teks header */
+            background-color: #FFD700;
+            color: #000000;
         }
         td:hover {
-            background-color: #FF0000; /* Merah saat hover */
-            color: #ffffff; /* Putih untuk teks saat hover */
+            background-color: #FF0000;
+            color: #ffffff;
         }
         .total, .sisa-saldo {
             font-weight: bold;
             margin-top: 10px;
-            color: #000000; /* Hitam untuk teks total dan sisa saldo */
+            color: #000000;
         }
         .total span, .sisa-saldo span {
-            color: #000000; /* Hitam untuk nilai total dan sisa saldo */
+            color: #000000;
         }
         .year-total {
             text-align: center;
             margin: 20px 0;
             font-size: 1.2em;
             font-weight: bold;
-            color: #FFD700; /* Emas untuk total tahunan */
+            color: #FFD700;
         }
         .modal {
             display: none;
@@ -108,25 +109,25 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.7); /* Hitam transparan */
+            background: rgba(0, 0, 0, 0.7);
             justify-content: center;
             align-items: center;
             z-index: 1000;
         }
         .modal-content {
-            background: #ffffff; /* Putih untuk modal */
+            background: #ffffff;
             padding: 20px;
-            border: 2px solid #FF0000; /* Merah untuk border modal */
+            border: 2px solid #FF0000;
             border-radius: 5px;
             width: 90%;
             max-width: 400px;
-            color: #000000; /* Hitam untuk teks modal */
+            color: #000000;
         }
         .modal-content input, .modal-content select {
             width: 100%;
             margin: 10px 0;
             padding: 8px;
-            border: 1px solid #FF0000; /* Merah untuk border input */
+            border: 1px solid #FF0000;
             box-sizing: border-box;
         }
         button {
@@ -137,32 +138,32 @@
             cursor: pointer;
         }
         .save-btn {
-            background-color: #FF0000; /* Merah untuk tombol simpan */
+            background-color: #FF0000;
             color: #ffffff;
         }
         .cancel-btn {
-            background-color: #FFD700; /* Emas untuk tombol batal */
+            background-color: #FFD700;
             color: #000000;
         }
         .delete-btn {
-            background-color: #000000; /* Hitam untuk tombol hapus */
+            background-color: #000000;
             color: #ffffff;
         }
         .add-btn {
-            background-color: #FF0000; /* Merah untuk tombol tambah */
+            background-color: #FF0000;
             color: #ffffff;
             display: block;
             margin: 10px auto;
         }
         .download-btn {
-            background-color: #FFD700; /* Emas untuk tombol download */
+            background-color: #FFD700;
             color: #000000;
             margin: 10px auto;
             display: block;
         }
         .empty-message {
             text-align: center;
-            color: #FF0000; /* Merah untuk pesan kosong */
+            color: #FF0000;
             margin: 10px 0;
         }
         .page {
@@ -241,26 +242,26 @@
             </select>
         </div>
         <div class="nav">
-            <button id="gajiBtn" class="active" onclick="showPage('gaji')">PEMASUKAN</button>
+            <button id="pemasukanBtn" class="active" onclick="showPage('pemasukan')">PEMASUKAN</button>
             <button id="pengeluaranBtn" onclick="showPage('pengeluaran')">PENGELUARAN</button>
             <button id="roadmapBtn" onclick="showPage('roadmap')">ROADMAP</button>
         </div>
 
-        <!-- Halaman Daftar Gaji -->
-        <div id="gajiPage" class="page active">
-            <div class="container" id="gajiContainer"></div>
-            <div class="year-total">Total Gaji Tahun <span id="gajiYear">2025</span>: <span id="gajiYearTotal">Rp0</span></div>
-            <button class="download-btn" onclick="openDownloadModal('gaji')">Download PDF</button>
+        <!-- Halaman Pemasukan -->
+        <div id="pemasukanPage" class="page active">
+            <div class="container" id="pemasukanContainer"></div>
+            <div class="year-total">Total Pemasukan Tahun <span id="pemasukanYear">2025</span>: <span id="pemasukanYearTotal">Rp0</span></div>
+            <button class="download-btn" onclick="openDownloadModal('pemasukan')">Download PDF</button>
         </div>
 
-        <!-- Halaman Daftar Pengeluaran -->
+        <!-- Halaman Pengeluaran -->
         <div id="pengeluaranPage" class="page">
             <div class="container" id="pengeluaranContainer"></div>
             <div class="year-total">Total Pengeluaran Tahun <span id="pengeluaranYear">2025</span>: <span id="pengeluaranYearTotal">Rp0</span></div>
             <button class="download-btn" onclick="openDownloadModal('pengeluaran')">Download PDF</button>
         </div>
 
-        <!-- Halaman Roadmap Hidup -->
+        <!-- Halaman Roadmap -->
         <div id="roadmapPage" class="page">
             <div class="roadmap-container" id="roadmapContainer"></div>
             <button class="add-btn" onclick="openRoadmapModal()">Tambah Rencana</button>
@@ -273,7 +274,11 @@
             <h3 id="modalTitle">Edit Data</h3>
             <input type="text" id="editField1" placeholder="Nama/Kategori">
             <input type="number" id="editTanggal" placeholder="Tanggal" min="1" max="31">
-            <input type="number" id="editField2" placeholder="Gaji/Jumlah (Rp)">
+            <select id="editTipe" style="display: none;">
+                <option value="Cash">Cash</option>
+                <option value="Crypto">Crypto</option>
+            </select>
+            <input type="number" id="editField2" placeholder="Pemasukan/Jumlah (Rp)">
             <button class="save-btn" onclick="saveEdit()">Simpan</button>
             <button class="delete-btn" id="deleteBtn" onclick="deleteEntry()">Hapus</button>
             <button class="cancel-btn" onclick="closeModal()">Batal</button>
@@ -359,7 +364,7 @@
             'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
             'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
         ];
-        let gajiData = {};
+        let pemasukanData = {};
         let pengeluaranData = {};
         let saldoAwalData = {};
         let roadmapData = {};
@@ -369,7 +374,7 @@
         let currentMonth = null;
         let currentIndex = null;
         let isAdding = false;
-        let currentPage = 'gaji';
+        let currentPage = 'pemasukan';
         let currentRoadmapIndex = null;
 
         // Cek status login saat halaman dimuat
@@ -388,8 +393,8 @@
 
         // Inisialisasi data untuk tahun tertentu
         function initializeData(year) {
-            if (!gajiData[year]) {
-                gajiData[year] = months.reduce((acc, month) => {
+            if (!pemasukanData[year]) {
+                pemasukanData[year] = months.reduce((acc, month) => {
                     acc[month] = [];
                     return acc;
                 }, {});
@@ -401,10 +406,7 @@
                 }, {});
             }
             if (!saldoAwalData[year]) {
-                saldoAwalData[year] = months.reduce((acc, month) => {
-                    acc[month] = month === 'Januari' ? 0 : 0;
-                    return acc;
-                }, {});
+                saldoAwalData[year] = 0; // Saldo awal global
             }
             if (!roadmapData[year]) {
                 roadmapData[year] = months.reduce((acc, month) => {
@@ -436,7 +438,7 @@
             if (!currentUser) return;
             db.ref(`users/${currentUser.uid}/data/${currentYear}`).once('value', snapshot => {
                 const data = snapshot.val() || {};
-                gajiData[currentYear] = data.gaji || months.reduce((acc, month) => {
+                pemasukanData[currentYear] = data.pemasukan || months.reduce((acc, month) => {
                     acc[month] = [];
                     return acc;
                 }, {});
@@ -444,15 +446,12 @@
                     acc[month] = [];
                     return acc;
                 }, {});
-                saldoAwalData[currentYear] = data.saldoAwal || months.reduce((acc, month) => {
-                    acc[month] = month === 'Januari' ? 0 : 0;
-                    return acc;
-                }, {});
+                saldoAwalData[currentYear] = data.saldoAwal !== undefined ? data.saldoAwal : 0;
                 roadmapData[currentYear] = data.roadmap || months.reduce((acc, month) => {
                     acc[month] = [];
                     return acc;
                 }, {});
-                if (currentPage === 'gaji') renderGajiCards();
+                if (currentPage === 'pemasukan') renderPemasukanCards();
                 else if (currentPage === 'pengeluaran') renderPengeluaranCards();
                 else renderRoadmap();
             }).catch(error => {
@@ -465,7 +464,7 @@
         function saveData() {
             if (currentUser) {
                 db.ref(`users/${currentUser.uid}/data/${currentYear}`).set({
-                    gaji: gajiData[currentYear],
+                    pemasukan: pemasukanData[currentYear],
                     pengeluaran: pengeluaranData[currentYear],
                     saldoAwal: saldoAwalData[currentYear],
                     roadmap: roadmapData[currentYear]
@@ -480,7 +479,7 @@
         function changeYear() {
             currentYear = document.getElementById('yearSelect').value;
             document.getElementById('currentYear').textContent = currentYear;
-            document.getElementById('gajiYear').textContent = currentYear;
+            document.getElementById('pemasukanYear').textContent = currentYear;
             document.getElementById('pengeluaranYear').textContent = currentYear;
             initializeData(currentYear);
             loadData();
@@ -493,42 +492,37 @@
             document.getElementById(`${page}Page`).classList.add('active');
             document.querySelectorAll('.nav button').forEach(btn => btn.classList.remove('active'));
             document.getElementById(`${page}Btn`).classList.add('active');
-            if (page === 'gaji') renderGajiCards();
+            if (page === 'pemasukan') renderPemasukanCards();
             else if (page === 'pengeluaran') renderPengeluaranCards();
             else renderRoadmap();
         }
 
         // Hitung total
         function calculateTotal(monthData, type) {
-            return monthData.reduce((sum, item) => sum + (type === 'gaji' ? item.gaji : item.jumlah), 0);
+            return monthData.reduce((sum, item) => sum + (type === 'pemasukan' ? item.pemasukan : item.jumlah), 0);
         }
 
         // Hitung saldo awal
-        function calculateSaldoAwal(month) {
-            if (month === 'Januari') {
-                return saldoAwalData[currentYear][month] || 0;
-            }
-            const monthIndex = months.indexOf(month);
-            const prevMonth = months[monthIndex - 1];
-            const prevSisaSaldo = (saldoAwalData[currentYear][prevMonth] || 0) - calculateTotal(pengeluaranData[currentYear][prevMonth] || [], 'pengeluaran');
-            return (prevSisaSaldo < 0 ? 0 : prevSisaSaldo) + calculateTotal(gajiData[currentYear][month] || [], 'gaji');
+        function calculateSaldoAwal() {
+            const totalPengeluaran = months.reduce((sum, month) => sum + calculateTotal(pengeluaranData[currentYear][month] || [], 'pengeluaran'), 0);
+            return saldoAwalData[currentYear] - totalPengeluaran;
         }
 
-        // Render kartu untuk Daftar Gaji
-        function renderGajiCards() {
-            const container = document.getElementById('gajiContainer');
+        // Render kartu untuk Pemasukan
+        function renderPemasukanCards() {
+            const container = document.getElementById('pemasukanContainer');
             container.innerHTML = '';
             months.forEach(month => {
-                const monthData = gajiData[currentYear][month] || [];
+                const monthData = pemasukanData[currentYear][month] || [];
                 const card = document.createElement('div');
                 card.className = 'card';
-                card.id = `gaji-${month.toLowerCase()}`;
+                card.id = `pemasukan-${month.toLowerCase()}`;
                 const tableContent = monthData.length > 0
                     ? monthData.map((item, index) => `
                         <tr data-month="${month}" data-index="${index}">
                             <td>${item.nama}</td>
                             <td>${item.tanggal}</td>
-                            <td>Rp${item.gaji.toLocaleString('id-ID')}</td>
+                            <td>Rp${item.pemasukan.toLocaleString('id-ID')}</td>
                         </tr>
                     `).join('')
                     : '<tr><td colspan="3" class="empty-message">Belum ada data</td></tr>';
@@ -539,36 +533,37 @@
                             <tr>
                                 <th>Nama</th>
                                 <th>Tanggal</th>
-                                <th>Gaji</th>
+                                <th>Pemasukan</th>
                             </tr>
                         </thead>
                         <tbody>
                             ${tableContent}
                         </tbody>
                     </table>
-                    <div class="total">Total: <span>Rp${calculateTotal(monthData, 'gaji').toLocaleString('id-ID')}</span></div>
-                    <button class="add-btn" onclick="openAddModal('${month}', 'gaji')">Tambah Data</button>
+                    <div class="total">Total: <span>Rp${calculateTotal(monthData, 'pemasukan').toLocaleString('id-ID')}</span></div>
+                    <button class="add-btn" onclick="openAddModal('${month}', 'pemasukan')">Tambah Data</button>
                 `;
                 container.appendChild(card);
             });
 
-            document.querySelectorAll('#gajiContainer tbody tr:not(.empty-message)').forEach(row => {
+            document.querySelectorAll('#pemasukanContainer tbody tr:not(.empty-message)').forEach(row => {
                 row.addEventListener('click', () => {
                     currentRow = row;
                     currentMonth = row.dataset.month;
                     currentIndex = row.dataset.index;
-                    openModal(row, false, 'gaji');
+                    openModal(row, false, 'pemasukan');
                 });
             });
 
-            updateGajiYearTotal();
+            updatePemasukanYearTotal();
         }
 
-        // Render kartu untuk Daftar Pengeluaran
+        // Render kartu untuk Pengeluaran
         function renderPengeluaranCards() {
             const container = document.getElementById('pengeluaranContainer');
             container.innerHTML = '';
-            months.forEach(month => {
+            const globalSaldoAwal = calculateSaldoAwal();
+            months.forEach((month, index) => {
                 const monthData = pengeluaranData[currentYear][month] || [];
                 const card = document.createElement('div');
                 card.className = 'card';
@@ -578,21 +573,21 @@
                         <tr data-month="${month}" data-index="${index}">
                             <td>${item.kategori}</td>
                             <td>${item.tanggal}</td>
+                            <td>${item.tipe}</td>
                             <td>Rp${item.jumlah.toLocaleString('id-ID')}</td>
                         </tr>
                     `).join('')
-                    : '<tr><td colspan="3" class="empty-message">Belum ada pengeluaran</td></tr>';
+                    : '<tr><td colspan="4" class="empty-message">Belum ada pengeluaran</td></tr>';
                 const totalPengeluaran = calculateTotal(monthData, 'pengeluaran');
-                const saldoAwal = calculateSaldoAwal(month);
-                const sisaSaldo = saldoAwal - totalPengeluaran;
                 card.innerHTML = `
+                    <div class="saldo-awal">Saldo Awal: Rp${globalSaldoAwal.toLocaleString('id-ID')}${index === 0 ? '<button class="edit-saldo-btn" onclick="openSaldoModal()">Edit</button>' : ''}</div>
                     <h2>${month.toUpperCase()}</h2>
-                    <div class="saldo-awal">Saldo Awal: Rp${saldoAwal.toLocaleString('id-ID')}<button class="edit-saldo-btn" onclick="openSaldoModal('${month}')">Edit</button></div>
                     <table>
                         <thead>
                             <tr>
                                 <th>Kategori</th>
                                 <th>Tanggal</th>
+                                <th>Tipe</th>
                                 <th>Jumlah</th>
                             </tr>
                         </thead>
@@ -601,7 +596,6 @@
                         </tbody>
                     </table>
                     <div class="total">Total Pengeluaran: <span>Rp${totalPengeluaran.toLocaleString('id-ID')}</span></div>
-                    <div class="sisa-saldo">Sisa Saldo: <span>Rp${sisaSaldo.toLocaleString('id-ID')}</span></div>
                     <button class="add-btn" onclick="openAddModal('${month}', 'pengeluaran')">Tambah Pengeluaran</button>
                 `;
                 container.appendChild(card);
@@ -619,7 +613,7 @@
             updatePengeluaranYearTotal();
         }
 
-        // Render Roadmap Hidup
+        // Render Roadmap
         function renderRoadmap() {
             const container = document.getElementById('roadmapContainer');
             container.innerHTML = '';
@@ -646,9 +640,9 @@
         }
 
         // Update total tahunan
-        function updateGajiYearTotal() {
-            const yearTotal = months.reduce((sum, month) => sum + calculateTotal(gajiData[currentYear][month] || [], 'gaji'), 0);
-            document.getElementById('gajiYearTotal').textContent = `Rp${yearTotal.toLocaleString('id-ID')}`;
+        function updatePemasukanYearTotal() {
+            const yearTotal = months.reduce((sum, month) => sum + calculateTotal(pemasukanData[currentYear][month] || [], 'pemasukan'), 0);
+            document.getElementById('pemasukanYearTotal').textContent = `Rp${yearTotal.toLocaleString('id-ID')}`;
         }
 
         function updatePengeluaranYearTotal() {
@@ -661,22 +655,27 @@
             isAdding = isAdd;
             currentPage = page;
             document.getElementById('modalTitle').textContent = isAdd 
-                ? (page === 'gaji' ? 'Tambah Data' : 'Tambah Pengeluaran') 
-                : (page === 'gaji' ? 'Edit Data' : 'Edit Pengeluaran');
+                ? (page === 'pemasukan' ? 'Tambah Data' : 'Tambah Pengeluaran') 
+                : (page === 'pemasukan' ? 'Edit Data' : 'Edit Pengeluaran');
             document.getElementById('deleteBtn').style.display = isAdd ? 'none' : 'inline-block';
-            document.getElementById('editField1').placeholder = page === 'gaji' ? 'Nama' : 'Kategori';
-            document.getElementById('editField2').placeholder = page === 'gaji' ? 'Gaji (Rp)' : 'Jumlah (Rp)';
+            document.getElementById('editField1').placeholder = page === 'pemasukan' ? 'Nama' : 'Kategori';
+            document.getElementById('editField2').placeholder = page === 'pemasukan' ? 'Pemasukan (Rp)' : 'Jumlah (Rp)';
+            document.getElementById('editTipe').style.display = page === 'pengeluaran' ? 'block' : 'none';
             if (isAdd) {
                 document.getElementById('editField1').value = '';
                 document.getElementById('editTanggal').value = '';
                 document.getElementById('editField2').value = '';
+                document.getElementById('editTipe').value = 'Cash';
             } else {
                 const field1 = row.cells[0].textContent;
                 const tanggal = row.cells[1].textContent;
-                const field2 = parseInt(row.cells[2].textContent.replace('Rp', '').replace(/\./g, ''));
+                const field2 = parseInt(row.cells[page === 'pemasukan' ? 2 : 3].textContent.replace('Rp', '').replace(/\./g, ''));
                 document.getElementById('editField1').value = field1;
                 document.getElementById('editTanggal').value = tanggal;
                 document.getElementById('editField2').value = field2;
+                if (page === 'pengeluaran') {
+                    document.getElementById('editTipe').value = row.cells[2].textContent;
+                }
             }
             document.getElementById('editModal').style.display = 'flex';
         }
@@ -694,18 +693,19 @@
             const field1 = document.getElementById('editField1').value.trim();
             const tanggal = parseInt(document.getElementById('editTanggal').value);
             const field2 = parseInt(document.getElementById('editField2').value);
+            const tipe = document.getElementById('editTipe').value;
 
             if (field1 && tanggal >= 1 && tanggal <= 31 && field2 > 0) {
-                const data = currentPage === 'gaji' ? gajiData[currentYear] : pengeluaranData[currentYear];
-                const newEntry = currentPage === 'gaji' 
-                    ? { nama: field1, tanggal, gaji: field2 }
-                    : { kategori: field1, tanggal, jumlah: field2 };
+                const data = currentPage === 'pemasukan' ? pemasukanData[currentYear] : pengeluaranData[currentYear];
+                const newEntry = currentPage === 'pemasukan' 
+                    ? { nama: field1, tanggal, pemasukan: field2 }
+                    : { kategori: field1, tanggal, tipe, jumlah: field2 };
                 if (isAdding) {
                     data[currentMonth].push(newEntry);
                 } else {
                     data[currentMonth][currentIndex] = newEntry;
                 }
-                if (currentPage === 'gaji') renderGajiCards();
+                if (currentPage === 'pemasukan') renderPemasukanCards();
                 else renderPengeluaranCards();
                 saveData();
                 closeModal();
@@ -716,9 +716,9 @@
 
         function deleteEntry() {
             if (confirm('Yakin ingin menghapus data ini?')) {
-                const data = currentPage === 'gaji' ? gajiData[currentYear] : pengeluaranData[currentYear];
+                const data = currentPage === 'pemasukan' ? pemasukanData[currentYear] : pengeluaranData[currentYear];
                 data[currentMonth].splice(currentIndex, 1);
-                if (currentPage === 'gaji') renderGajiCards();
+                if (currentPage === 'pemasukan') renderPemasukanCards();
                 else renderPengeluaranCards();
                 saveData();
                 closeModal();
@@ -726,9 +726,8 @@
         }
 
         // Modal untuk edit saldo awal
-        function openSaldoModal(month) {
-            currentMonth = month;
-            document.getElementById('editSaldoAwal').value = saldoAwalData[currentYear][month] || 0;
+        function openSaldoModal() {
+            document.getElementById('editSaldoAwal').value = saldoAwalData[currentYear] || 0;
             document.getElementById('editSaldoModal').style.display = 'flex';
         }
 
@@ -739,7 +738,7 @@
         function saveSaldoAwal() {
             const saldoAwal = parseInt(document.getElementById('editSaldoAwal').value);
             if (saldoAwal >= 0) {
-                saldoAwalData[currentYear][currentMonth] = saldoAwal;
+                saldoAwalData[currentYear] = saldoAwal;
                 renderPengeluaranCards();
                 saveData();
                 closeSaldoModal();
@@ -760,45 +759,51 @@
 
         function downloadPDF() {
             const selectedMonths = Array.from(document.getElementById('downloadMonth').selectedOptions).map(option => option.value);
-            const data = currentPage === 'gaji' ? gajiData[currentYear] : pengeluaranData[currentYear];
-            const isGaji = currentPage === 'gaji';
+            const data = currentPage === 'pemasukan' ? pemasukanData[currentYear] : pengeluaranData[currentYear];
+            const isPemasukan = currentPage === 'pemasukan';
             const monthsToDownload = selectedMonths.includes('all') ? months : selectedMonths;
+
+            console.log('Generating PDF for:', currentPage, 'Months:', monthsToDownload);
+            console.log('Data:', data);
 
             const element = document.createElement('div');
             element.style.padding = '20px';
-            element.innerHTML = `<h1 style="color: #000000;">${isGaji ? 'PEMASUKAN' : 'PENGELUARAN'} ${currentYear}</h1>`;
+            element.innerHTML = `<h1 style="color: #000000;">${isPemasukan ? 'Pemasukan' : 'Pengeluaran'} ${currentYear}</h1>`;
 
             monthsToDownload.forEach(month => {
                 const monthData = data[month] || [];
+                console.log(`Month: ${month}, Data:`, monthData);
+
                 const tableContent = monthData.length > 0
                     ? monthData.map(item => `
                         <tr>
-                            <td style="border: 1px solid #FF0000; padding: 8px;">${isGaji ? item.nama : item.kategori}</td>
+                            <td style="border: 1px solid #FF0000; padding: 8px;">${isPemasukan ? item.nama : item.kategori}</td>
                             <td style="border: 1px solid #FF0000; padding: 8px;">${item.tanggal}</td>
-                            <td style="border: 1px solid #FF0000; padding: 8px;">Rp${(isGaji ? item.gaji : item.jumlah).toLocaleString('id-ID')}</td>
+                            ${!isPemasukan ? `<td style="border: 1px solid #FF0000; padding: 8px;">${item.tipe}</td>` : ''}
+                            <td style="border: 1px solid #FF0000; padding: 8px;">Rp${(isPemasukan ? item.pemasukan : item.jumlah).toLocaleString('id-ID')}</td>
                         </tr>
                     `).join('')
-                    : '<tr><td colspan="3" style="color: #FF0000; text-align: center;">Belum ada data</td></tr>';
+                    : `<tr><td colspan="${isPemasukan ? 3 : 4}" style="color: #FF0000; text-align: center;">Belum ada data</td></tr>`;
 
-                const total = calculateTotal(monthData, isGaji ? 'gaji' : 'pengeluaran');
+                const total = calculateTotal(monthData, isPemasukan ? 'pemasukan' : 'pengeluaran');
                 const cardHtml = `
                     <div style="margin-bottom: 20px;">
+                        ${!isPemasukan ? `<p style="color: #FFD700;">Saldo Awal: Rp${calculateSaldoAwal().toLocaleString('id-ID')}</p>` : ''}
                         <h2 style="color: #000000;">${month.toUpperCase()}</h2>
-                        ${!isGaji ? `<p style="color: #FFD700;">Saldo Awal: Rp${calculateSaldoAwal(month).toLocaleString('id-ID')}</p>` : ''}
                         <table style="width: 100%; border-collapse: collapse;">
                             <thead>
                                 <tr style="background-color: #FFD700;">
-                                    <th style="border: 1px solid #FF0000; padding: 8px;">${isGaji ? 'Nama' : 'Kategori'}</th>
+                                    <th style="border: 1px solid #FF0000; padding: 8px;">${isPemasukan ? 'Nama' : 'Kategori'}</th>
                                     <th style="border: 1px solid #FF0000; padding: 8px;">Tanggal</th>
-                                    <th style="border: 1px solid #FF0000; padding: 8px;">${isGaji ? 'Gaji' : 'Jumlah'}</th>
+                                    ${!isPemasukan ? `<th style="border: 1px solid #FF0000; padding: 8px;">Tipe</th>` : ''}
+                                    <th style="border: 1px solid #FF0000; padding: 8px;">${isPemasukan ? 'Pemasukan' : 'Jumlah'}</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 ${tableContent}
                             </tbody>
                         </table>
-                        <p style="color: #000000; font-weight: bold;">${isGaji ? 'Total' : 'Total Pengeluaran'}: Rp${total.toLocaleString('id-ID')}</p>
-                        ${!isGaji ? `<p style="color: #000000; font-weight: bold;">Sisa Saldo: Rp${(calculateSaldoAwal(month) - total).toLocaleString('id-ID')}</p>` : ''}
+                        <p style="color: #000000; font-weight: bold;">${isPemasukan ? 'Total' : 'Total Pengeluaran'}: Rp${total.toLocaleString('id-ID')}</p>
                     </div>
                 `;
                 element.innerHTML += cardHtml;
@@ -806,7 +811,7 @@
 
             const opt = {
                 margin: 1,
-                filename: `${isGaji ? 'Gaji' : 'Pengeluaran'}_${currentYear}_${selectedMonths.includes('all') ? 'Semua' : selectedMonths.join('-')}.pdf`,
+                filename: `${isPemasukan ? 'Pemasukan' : 'Pengeluaran'}_${currentYear}_${selectedMonths.includes('all') ? 'Semua' : selectedMonths.join('-')}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { scale: 2 },
                 jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
