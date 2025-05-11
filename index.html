@@ -348,7 +348,7 @@
         };
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
-        const db = firebase.database();;
+        const db = firebase.database();
 
         // Data dan state
         const months = [
@@ -384,22 +384,30 @@
 
         // Inisialisasi data untuk tahun tertentu
         function initializeData(year) {
-            gajiData[year] = gajiData[year] || months.reduce((acc, month) => {
-                acc[month] = [];
-                return acc;
-            }, {});
-            pengeluaranData[year] = pengeluaranData[year] || months.reduce((acc, month) => {
-                acc[month] = [];
-                return acc;
-            }, {});
-            saldoAwalData[year] = saldoAwalData[year] || months.reduce((acc, month) => {
-                acc[month] = month === 'Januari' ? 5000000 : 0;
-                return acc;
-            }, {});
-            roadmapData[year] = roadmapData[year] || months.reduce((acc, month) => {
-                acc[month] = [];
-                return acc;
-            }, {});
+            if (!gajiData[year]) {
+                gajiData[year] = months.reduce((acc, month) => {
+                    acc[month] = [];
+                    return acc;
+                }, {});
+            }
+            if (!pengeluaranData[year]) {
+                pengeluaranData[year] = months.reduce((acc, month) => {
+                    acc[month] = [];
+                    return acc;
+                }, {});
+            }
+            if (!saldoAwalData[year]) {
+                saldoAwalData[year] = months.reduce((acc, month) => {
+                    acc[month] = month === 'Januari' ? 5000000 : 0;
+                    return acc;
+                }, {});
+            }
+            if (!roadmapData[year]) {
+                roadmapData[year] = months.reduce((acc, month) => {
+                    acc[month] = [];
+                    return acc;
+                }, {});
+            }
         }
 
         // Login
@@ -494,12 +502,12 @@
         // Hitung saldo awal
         function calculateSaldoAwal(month) {
             if (month === 'Januari') {
-                return saldoAwalData[currentYear][month];
+                return saldoAwalData[currentYear][month] || 5000000;
             }
             const monthIndex = months.indexOf(month);
             const prevMonth = months[monthIndex - 1];
-            const prevSisaSaldo = saldoAwalData[currentYear][prevMonth] - calculateTotal(pengeluaranData[currentYear][prevMonth], 'pengeluaran');
-            return (prevSisaSaldo < 0 ? 0 : prevSisaSaldo) + calculateTotal(gajiData[currentYear][month], 'gaji');
+            const prevSisaSaldo = (saldoAwalData[currentYear][prevMonth] || 0) - calculateTotal(pengeluaranData[currentYear][prevMonth] || [], 'pengeluaran');
+            return (prevSisaSaldo < 0 ? 0 : prevSisaSaldo) + calculateTotal(gajiData[currentYear][month] || [], 'gaji');
         }
 
         // Render kartu untuk Daftar Gaji
@@ -507,11 +515,12 @@
             const container = document.getElementById('gajiContainer');
             container.innerHTML = '';
             months.forEach(month => {
+                const monthData = gajiData[currentYear][month] || [];
                 const card = document.createElement('div');
                 card.className = 'card';
                 card.id = `gaji-${month.toLowerCase()}`;
-                const tableContent = gajiData[currentYear][month].length > 0
-                    ? gajiData[currentYear][month].map((item, index) => `
+                const tableContent = monthData.length > 0
+                    ? monthData.map((item, index) => `
                         <tr data-month="${month}" data-index="${index}">
                             <td>${item.nama}</td>
                             <td>${item.tanggal}</td>
@@ -533,7 +542,7 @@
                             ${tableContent}
                         </tbody>
                     </table>
-                    <div class="total">Total: <span>Rp${calculateTotal(gajiData[currentYear][month], 'gaji').toLocaleString('id-ID')}</span></div>
+                    <div class="total">Total: <span>Rp${calculateTotal(monthData, 'gaji').toLocaleString('id-ID')}</span></div>
                     <button class="add-btn" onclick="openAddModal('${month}', 'gaji')">Tambah Data</button>
                 `;
                 container.appendChild(card);
@@ -556,11 +565,12 @@
             const container = document.getElementById('pengeluaranContainer');
             container.innerHTML = '';
             months.forEach(month => {
+                const monthData = pengeluaranData[currentYear][month] || [];
                 const card = document.createElement('div');
                 card.className = 'card';
                 card.id = `pengeluaran-${month.toLowerCase()}`;
-                const tableContent = pengeluaranData[currentYear][month].length > 0
-                    ? pengeluaranData[currentYear][month].map((item, index) => `
+                const tableContent = monthData.length > 0
+                    ? monthData.map((item, index) => `
                         <tr data-month="${month}" data-index="${index}">
                             <td>${item.kategori}</td>
                             <td>${item.tanggal}</td>
@@ -568,7 +578,7 @@
                         </tr>
                     `).join('')
                     : '<tr><td colspan="3" class="empty-message">Belum ada pengeluaran</td></tr>';
-                const totalPengeluaran = calculateTotal(pengeluaranData[currentYear][month], 'pengeluaran');
+                const totalPengeluaran = calculateTotal(monthData, 'pengeluaran');
                 const saldoAwal = calculateSaldoAwal(month);
                 const sisaSaldo = saldoAwal - totalPengeluaran;
                 card.innerHTML = `
@@ -633,12 +643,12 @@
 
         // Update total tahunan
         function updateGajiYearTotal() {
-            const yearTotal = months.reduce((sum, month) => sum + calculateTotal(gajiData[currentYear][month], 'gaji'), 0);
+            const yearTotal = months.reduce((sum, month) => sum + calculateTotal(gajiData[currentYear][month] || [], 'gaji'), 0);
             document.getElementById('gajiYearTotal').textContent = `Rp${yearTotal.toLocaleString('id-ID')}`;
         }
 
         function updatePengeluaranYearTotal() {
-            const yearTotal = months.reduce((sum, month) => sum + calculateTotal(pengeluaranData[currentYear][month], 'pengeluaran'), 0);
+            const yearTotal = months.reduce((sum, month) => sum + calculateTotal(pengeluaranData[currentYear][month] || [], 'pengeluaran'), 0);
             document.getElementById('pengeluaranYearTotal').textContent = `Rp${yearTotal.toLocaleString('id-ID')}`;
         }
 
@@ -714,7 +724,7 @@
         // Modal untuk edit saldo awal
         function openSaldoModal(month) {
             currentMonth = month;
-            document.getElementById('editSaldoAwal').value = saldoAwalData[currentYear][month];
+            document.getElementById('editSaldoAwal').value = saldoAwalData[currentYear][month] || 0;
             document.getElementById('editSaldoModal').style.display = 'flex';
         }
 
@@ -755,8 +765,9 @@
             element.innerHTML = `<h1 style="color: #000000;">${isGaji ? 'Daftar Gaji' : 'Daftar Pengeluaran'} ${currentYear}</h1>`;
 
             monthsToDownload.forEach(month => {
-                const tableContent = data[month].length > 0
-                    ? data[month].map(item => `
+                const monthData = data[month] || [];
+                const tableContent = monthData.length > 0
+                    ? monthData.map(item => `
                         <tr>
                             <td style="border: 1px solid #FF0000; padding: 8px;">${isGaji ? item.nama : item.kategori}</td>
                             <td style="border: 1px solid #FF0000; padding: 8px;">${item.tanggal}</td>
@@ -765,7 +776,7 @@
                     `).join('')
                     : '<tr><td colspan="3" style="color: #FF0000; text-align: center;">Belum ada data</td></tr>';
 
-                const total = calculateTotal(data[month], isGaji ? 'gaji' : 'pengeluaran');
+                const total = calculateTotal(monthData, isGaji ? 'gaji' : 'pengeluaran');
                 const cardHtml = `
                     <div style="margin-bottom: 20px;">
                         <h2 style="color: #000000;">${month.toUpperCase()}</h2>
