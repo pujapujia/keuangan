@@ -190,6 +190,7 @@
             border: 1px solid #FF0000;
             border-radius: 5px;
             color: #000000;
+            cursor: pointer;
         }
         .roadmap-item h3 {
             color: #000000;
@@ -221,7 +222,7 @@
     <!-- Halaman Login -->
     <div id="loginPage" class="login-page">
         <h2 style="color: #000000; text-align: center;">Login</h2>
-        <input type="text" id="username" placeholder="Username">
+        <input type="text" id="username" placeholder="Username (Email)">
         <input type="password" id="password" placeholder="Password">
         <button class="save-btn" onclick="login()">Login</button>
     </div>
@@ -347,7 +348,7 @@
         };
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
-        const db = firebase.database();
+        const db = firebase.database();;
 
         // Data dan state
         const months = [
@@ -366,6 +367,20 @@
         let isAdding = false;
         let currentPage = 'gaji';
         let currentRoadmapIndex = null;
+
+        // Cek status login saat halaman dimuat
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                currentUser = user;
+                document.getElementById('loginPage').style.display = 'none';
+                document.getElementById('mainPage').style.display = 'block';
+                initializeData(currentYear);
+                loadData();
+            } else {
+                document.getElementById('loginPage').style.display = 'block';
+                document.getElementById('mainPage').style.display = 'none';
+            }
+        });
 
         // Inisialisasi data untuk tahun tertentu
         function initializeData(year) {
@@ -406,6 +421,7 @@
 
         // Load data dari Firebase
         function loadData() {
+            if (!currentUser) return;
             db.ref(`users/${currentUser.uid}/data/${currentYear}`).once('value', snapshot => {
                 const data = snapshot.val() || {};
                 gajiData[currentYear] = data.gaji || months.reduce((acc, month) => {
@@ -424,7 +440,12 @@
                     acc[month] = [];
                     return acc;
                 }, {});
-                renderGajiCards();
+                if (currentPage === 'gaji') renderGajiCards();
+                else if (currentPage === 'pengeluaran') renderPengeluaranCards();
+                else renderRoadmap();
+            }).catch(error => {
+                console.error('Error loading data:', error);
+                alert('Gagal memuat data dari Firebase. Periksa koneksi atau konfigurasi.');
             });
         }
 
@@ -436,6 +457,9 @@
                     pengeluaran: pengeluaranData[currentYear],
                     saldoAwal: saldoAwalData[currentYear],
                     roadmap: roadmapData[currentYear]
+                }).catch(error => {
+                    console.error('Error saving data:', error);
+                    alert('Gagal menyimpan data ke Firebase.');
                 });
             }
         }
@@ -525,7 +549,6 @@
             });
 
             updateGajiYearTotal();
-            if (currentPage === 'pengeluaran') renderPengeluaranCards();
         }
 
         // Render kartu untuk Daftar Pengeluaran
@@ -587,7 +610,7 @@
             const container = document.getElementById('roadmapContainer');
             container.innerHTML = '';
             months.forEach(month => {
-                const plans = roadmapData[currentYear][month];
+                const plans = roadmapData[currentYear][month] || [];
                 const planContent = plans.length > 0
                     ? plans.map((plan, index) => `
                         <div class="roadmap-item" data-month="${month}" data-index="${index}">
@@ -779,13 +802,14 @@
 
         // Modal untuk tambah/edit roadmap
         function openRoadmapModal(item = null) {
+            currentRoadmapIndex = item ? item.dataset.index : null;
             document.getElementById('roadmapDeleteBtn').style.display = item ? 'inline-block' : 'none';
             if (item) {
                 currentMonth = item.dataset.month;
-                currentRoadmapIndex = item.dataset.index;
                 document.getElementById('roadmapMonth').value = currentMonth;
                 document.getElementById('roadmapPlan').value = roadmapData[currentYear][currentMonth][currentRoadmapIndex].plan;
             } else {
+                currentMonth = 'Januari';
                 document.getElementById('roadmapMonth').value = 'Januari';
                 document.getElementById('roadmapPlan').value = '';
             }
@@ -800,6 +824,9 @@
             const month = document.getElementById('roadmapMonth').value;
             const plan = document.getElementById('roadmapPlan').value.trim();
             if (plan) {
+                if (!roadmapData[currentYear][month]) {
+                    roadmapData[currentYear][month] = [];
+                }
                 if (currentRoadmapIndex !== null) {
                     roadmapData[currentYear][month][currentRoadmapIndex] = { plan };
                 } else {
