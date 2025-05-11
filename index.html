@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Keuangan</title>
     <style>
-        /* CSS tetap sama, update .saldo-display untuk warna */
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
@@ -89,11 +88,11 @@
         }
         .saldo-display {
             margin-bottom: 10px;
-            color: #ffffff; /* Ubah jadi putih */
+            color: #ffffff;
             font-weight: bold;
         }
         .saldo-display span {
-            color: #ffffff; /* Cash dan Crypto tetap merah */
+            color: #ffffff;
             cursor: pointer;
             text-decoration: underline;
         }
@@ -212,7 +211,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
     <!-- Halaman Login -->
@@ -350,6 +349,9 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.database();
+
+        // Dapatkan jsPDF
+        const { jsPDF } = window.jspdf;
 
         // Data dan state
         const months = [
@@ -827,91 +829,138 @@
             console.log('Selected Months:', monthsToDownload);
             console.log('Data:', data);
 
-            // Buat elemen sementara untuk PDF
-            const element = document.createElement('div');
-            element.style.padding = '20px';
-            element.style.backgroundColor = '#ffffff';
-            element.style.color = '#000000';
-            element.style.position = 'absolute';
-            element.style.top = '-9999px'; // Sembunyikan di luar layar
-            element.innerHTML = `<h1 style="color: #000000;">${isPemasukan ? 'Pemasukan' : 'Pengeluaran'} ${currentYear}</h1>`;
+            // Buat PDF menggunakan jsPDF
+            const doc = new jsPDF({
+                orientation: 'portrait',
+                unit: 'mm',
+                format: 'a4'
+            });
 
+            let yPos = 10; // Posisi vertikal awal
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const marginLeft = 10;
+            const lineHeight = 7;
+
+            // Tambah header
+            doc.setFontSize(16);
+            doc.setFont('helvetica', 'bold');
+            doc.text(`${isPemasukan ? 'Pemasukan' : 'Pengeluaran'} ${currentYear}`, pageWidth / 2, yPos, { align: 'center' });
+            yPos += lineHeight * 2;
+
+            // Tambah saldo awal untuk Pengeluaran
             if (!isPemasukan) {
-                element.innerHTML += `
-                    <p style="color: #000000;">Saldo Awal Cash: Rp${(saldoAwalData[currentYear].cash || 0).toLocaleString('id-ID')}</p>
-                    <p style="color: #000000;">Saldo Awal Crypto: Rp${(saldoAwalData[currentYear].crypto || 0).toLocaleString('id-ID')}</p>
-                `;
+                doc.setFontSize(12);
+                doc.setFont('helvetica', 'normal');
+                doc.text(`Saldo Awal Cash: Rp${(saldoAwalData[currentYear].cash || 0).toLocaleString('id-ID')}`, marginLeft, yPos);
+                yPos += lineHeight;
+                doc.text(`Saldo Awal Crypto: Rp${(saldoAwalData[currentYear].crypto || 0).toLocaleString('id-ID')}`, marginLeft, yPos);
+                yPos += lineHeight * 2;
             }
 
+            // Loop melalui bulan yang dipilih
             monthsToDownload.forEach(month => {
                 const monthData = data[month] || [];
                 console.log(`Month: ${month}, Data:`, monthData);
 
-                const tableContent = monthData.length > 0
-                    ? monthData.map(item => `
-                        <tr>
-                            <td style="border: 1px solid #FF0000; padding: 8px;">${isPemasukan ? (item.nama || '-') : (item.kategori || '-')}</td>
-                            <td style="border: 1px solid #FF0000; padding: 8px;">${item.tanggal || '-'}</td>
-                            ${!isPemasukan ? `<td style="border: 1px solid #FF0000; padding: 8px;">${item.tipe || '-'}</td>` : ''}
-                            <td style="border: 1px solid #FF0000; padding: 8px;">Rp${(isPemasukan ? (item.pemasukan || 0) : (item.jumlah || 0)).toLocaleString('id-ID')}</td>
-                        </tr>
-                    `).join('')
-                    : `<tr><td colspan="${isPemasukan ? 3 : 4}" style="color: #FF0000; text-align: center;">Belum ada data</td></tr>`;
+                // Tambah judul bulan
+                doc.setFontSize(14);
+                doc.setFont('helvetica', 'bold');
+                doc.text(month.toUpperCase(), marginLeft, yPos);
+                yPos += lineHeight;
 
-                const totalCash = calculateTotal(monthData, 'pengeluaran', 'Cash');
-                const totalCrypto = calculateTotal(monthData, 'pengeluaran', 'Crypto');
-                const total = calculateTotal(monthData, isPemasukan ? 'pemasukan' : 'pengeluaran');
-                const cardHtml = `
-                    <div style="margin-bottom: 20px;">
-                        <h2 style="color: #000000;">${month.toUpperCase()}</h2>
-                        <table style="width: 100%; border-collapse: collapse;">
-                            <thead>
-                                <tr style="background-color: #FFD700;">
-                                    <th style="border: 1px solid #FF0000; padding: 8px;">${isPemasukan ? 'Nama' : 'Kategori'}</th>
-                                    <th style="border: 1px solid #FF0000; padding: 8px;">Tanggal</th>
-                                    ${!isPemasukan ? `<th style="border: 1px solid #FF0000; padding: 8px;">Tipe</th>` : ''}
-                                    <th style="border: 1px solid #FF0000; padding: 8px;">${isPemasukan ? 'Pemasukan' : 'Jumlah'}</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${tableContent}
-                            </tbody>
-                        </table>
-                        ${isPemasukan ? `
-                            <p style="color: #000000; font-weight: bold;">Total: Rp${total.toLocaleString('id-ID')}</p>
-                        ` : `
-                            <p style="color: #000000; font-weight: bold;">Total Pengeluaran Cash: Rp${totalCash.toLocaleString('id-ID')}</p>
-                            <p style="color: #000000; font-weight: bold;">Total Pengeluaran Crypto: Rp${totalCrypto.toLocaleString('id-ID')}</p>
-                        `}
-                    </div>
-                `;
-                element.innerHTML += cardHtml;
+                if (monthData.length === 0) {
+                    doc.setFontSize(12);
+                    doc.setFont('helvetica', 'normal');
+                    doc.text('Belum ada data', marginLeft, yPos);
+                    yPos += lineHeight * 2;
+                } else {
+                    // Header tabel
+                    doc.setFontSize(10);
+                    doc.setFont('helvetica', 'bold');
+                    const headers = isPemasukan
+                        ? ['Nama', 'Tanggal', 'Pemasukan']
+                        : ['Kategori', 'Tanggal', 'Tipe', 'Jumlah'];
+                    const colWidths = isPemasukan ? [50, 30, 50] : [50, 30, 30, 50];
+                    let xPos = marginLeft;
+
+                    headers.forEach((header, i) => {
+                        doc.text(header, xPos, yPos);
+                        xPos += colWidths[i];
+                    });
+                    yPos += lineHeight;
+
+                    // Garis bawah header
+                    doc.setLineWidth(0.5);
+                    doc.line(marginLeft, yPos, pageWidth - marginLeft, yPos);
+                    yPos += 2;
+
+                    // Data tabel
+                    doc.setFontSize(10);
+                    doc.setFont('helvetica', 'normal');
+                    monthData.forEach(item => {
+                        // Cek apakah perlu tambah halaman baru
+                        if (yPos > 270) {
+                            doc.addPage();
+                            yPos = 10;
+                            doc.setFontSize(14);
+                            doc.setFont('helvetica', 'bold');
+                            doc.text(month.toUpperCase(), marginLeft, yPos);
+                            yPos += lineHeight;
+                            doc.setFontSize(10);
+                            doc.setFont('helvetica', 'bold');
+                            xPos = marginLeft;
+                            headers.forEach((header, i) => {
+                                doc.text(header, xPos, yPos);
+                                xPos += colWidths[i];
+                            });
+                            yPos += lineHeight;
+                            doc.setLineWidth(0.5);
+                            doc.line(marginLeft, yPos, pageWidth - marginLeft, yPos);
+                            yPos += 2;
+                            doc.setFontSize(10);
+                            doc.setFont('helvetica', 'normal');
+                        }
+
+                        xPos = marginLeft;
+                        if (isPemasukan) {
+                            doc.text(item.nama || '-', xPos, yPos);
+                            xPos += colWidths[0];
+                            doc.text(String(item.tanggal || '-'), xPos, yPos);
+                            xPos += colWidths[1];
+                            doc.text(`Rp${(item.pemasukan || 0).toLocaleString('id-ID')}`, xPos, yPos);
+                        } else {
+                            doc.text(item.kategori || '-', xPos, yPos);
+                            xPos += colWidths[0];
+                            doc.text(String(item.tanggal || '-'), xPos, yPos);
+                            xPos += colWidths[1];
+                            doc.text(item.tipe || '-', xPos, yPos);
+                            xPos += colWidths[2];
+                            doc.text(`Rp${(item.jumlah || 0).toLocaleString('id-ID')}`, xPos, yPos);
+                        }
+                        yPos += lineHeight;
+                    });
+
+                    // Total
+                    const totalCash = calculateTotal(monthData, 'pengeluaran', 'Cash');
+                    const totalCrypto = calculateTotal(monthData, 'pengeluaran', 'Crypto');
+                    const total = calculateTotal(monthData, isPemasukan ? 'pemasukan' : 'pengeluaran');
+                    yPos += 2;
+                    doc.setFont('helvetica', 'bold');
+                    if (isPemasukan) {
+                        doc.text(`Total: Rp${total.toLocaleString('id-ID')}`, marginLeft, yPos);
+                    } else {
+                        doc.text(`Total Pengeluaran Cash: Rp${totalCash.toLocaleString('id-ID')}`, marginLeft, yPos);
+                        yPos += lineHeight;
+                        doc.text(`Total Pengeluaran Crypto: Rp${totalCrypto.toLocaleString('id-ID')}`, marginLeft, yPos);
+                    }
+                    yPos += lineHeight * 2;
+                }
             });
 
-            // Debugging: Log HTML yang di-generate
-            console.log('Generated HTML for PDF:', element.innerHTML);
-
-            // Append elemen ke body agar ter-render dengan benar
-            document.body.appendChild(element);
-
-            const opt = {
-                margin: 1,
-                filename: `${isPemasukan ? 'Pemasukan' : 'Pengeluaran'}_${currentYear}_${selectedMonths.includes('all') ? 'Semua' : selectedMonths.join('-')}.pdf`,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2 },
-                jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
-            };
-
-            html2pdf().from(element).set(opt).save().then(() => {
-                // Hapus elemen sementara setelah PDF dibuat
-                document.body.removeChild(element);
-                closeDownloadModal();
-            }).catch(error => {
-                console.error('Error generating PDF:', error);
-                alert('Gagal membuat PDF. Cek konsol untuk detail.');
-                document.body.removeChild(element);
-                closeDownloadModal();
-            });
+            // Simpan PDF
+            const filename = `${isPemasukan ? 'Pemasukan' : 'Pengeluaran'}_${currentYear}_${selectedMonths.includes('all') ? 'Semua' : selectedMonths.join('-')}.pdf`;
+            doc.save(filename);
+            closeDownloadModal();
         }
 
         // Modal untuk tambah/edit roadmap
