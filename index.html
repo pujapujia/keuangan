@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Keuangan</title>
     <style>
-        /* CSS tetap sama, hapus .saldo-container, tambah styling untuk saldo */
+        /* CSS tetap sama, update .saldo-display untuk warna */
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
@@ -89,11 +89,11 @@
         }
         .saldo-display {
             margin-bottom: 10px;
-            color: #FFD700;
+            color: #ffffff; /* Ubah jadi putih */
             font-weight: bold;
         }
         .saldo-display span {
-            color: #FF0000;
+            color: #FF0000; /* Cash dan Crypto tetap merah */
             cursor: pointer;
             text-decoration: underline;
         }
@@ -827,16 +827,19 @@
             console.log('Selected Months:', monthsToDownload);
             console.log('Data:', data);
 
+            // Buat elemen sementara untuk PDF
             const element = document.createElement('div');
             element.style.padding = '20px';
             element.style.backgroundColor = '#ffffff';
             element.style.color = '#000000';
+            element.style.position = 'absolute';
+            element.style.top = '-9999px'; // Sembunyikan di luar layar
             element.innerHTML = `<h1 style="color: #000000;">${isPemasukan ? 'Pemasukan' : 'Pengeluaran'} ${currentYear}</h1>`;
 
             if (!isPemasukan) {
                 element.innerHTML += `
-                    <p style="color: #000000;">Saldo Awal Cash: Rp${saldoAwalData[currentYear].cash.toLocaleString('id-ID')}</p>
-                    <p style="color: #000000;">Saldo Awal Crypto: Rp${saldoAwalData[currentYear].crypto.toLocaleString('id-ID')}</p>
+                    <p style="color: #000000;">Saldo Awal Cash: Rp${(saldoAwalData[currentYear].cash || 0).toLocaleString('id-ID')}</p>
+                    <p style="color: #000000;">Saldo Awal Crypto: Rp${(saldoAwalData[currentYear].crypto || 0).toLocaleString('id-ID')}</p>
                 `;
             }
 
@@ -847,10 +850,10 @@
                 const tableContent = monthData.length > 0
                     ? monthData.map(item => `
                         <tr>
-                            <td style="border: 1px solid #FF0000; padding: 8px;">${isPemasukan ? item.nama : item.kategori || '-'}</td>
+                            <td style="border: 1px solid #FF0000; padding: 8px;">${isPemasukan ? (item.nama || '-') : (item.kategori || '-')}</td>
                             <td style="border: 1px solid #FF0000; padding: 8px;">${item.tanggal || '-'}</td>
                             ${!isPemasukan ? `<td style="border: 1px solid #FF0000; padding: 8px;">${item.tipe || '-'}</td>` : ''}
-                            <td style="border: 1px solid #FF0000; padding: 8px;">Rp${(isPemasukan ? item.pemasukan : item.jumlah || 0).toLocaleString('id-ID')}</td>
+                            <td style="border: 1px solid #FF0000; padding: 8px;">Rp${(isPemasukan ? (item.pemasukan || 0) : (item.jumlah || 0)).toLocaleString('id-ID')}</td>
                         </tr>
                     `).join('')
                     : `<tr><td colspan="${isPemasukan ? 3 : 4}" style="color: #FF0000; text-align: center;">Belum ada data</td></tr>`;
@@ -885,18 +888,30 @@
                 element.innerHTML += cardHtml;
             });
 
-            // Tambah delay kecil untuk memastikan elemen ter-render
-            setTimeout(() => {
-                const opt = {
-                    margin: 1,
-                    filename: `${isPemasukan ? 'Pemasukan' : 'Pengeluaran'}_${currentYear}_${selectedMonths.includes('all') ? 'Semua' : selectedMonths.join('-')}.pdf`,
-                    image: { type: 'jpeg', quality: 0.98 },
-                    html2canvas: { scale: 2 },
-                    jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
-                };
-                html2pdf().from(element).set(opt).save();
+            // Debugging: Log HTML yang di-generate
+            console.log('Generated HTML for PDF:', element.innerHTML);
+
+            // Append elemen ke body agar ter-render dengan benar
+            document.body.appendChild(element);
+
+            const opt = {
+                margin: 1,
+                filename: `${isPemasukan ? 'Pemasukan' : 'Pengeluaran'}_${currentYear}_${selectedMonths.includes('all') ? 'Semua' : selectedMonths.join('-')}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+
+            html2pdf().from(element).set(opt).save().then(() => {
+                // Hapus elemen sementara setelah PDF dibuat
+                document.body.removeChild(element);
                 closeDownloadModal();
-            }, 100); // Delay 100ms
+            }).catch(error => {
+                console.error('Error generating PDF:', error);
+                alert('Gagal membuat PDF. Cek konsol untuk detail.');
+                document.body.removeChild(element);
+                closeDownloadModal();
+            });
         }
 
         // Modal untuk tambah/edit roadmap
