@@ -402,7 +402,7 @@
             }
             if (!saldoAwalData[year]) {
                 saldoAwalData[year] = months.reduce((acc, month) => {
-                    acc[month] = month === 'Januari' ? 5000000 : 0;
+                    acc[month] = month === 'Januari' ? 0 : 0;
                     return acc;
                 }, {});
             }
@@ -445,7 +445,7 @@
                     return acc;
                 }, {});
                 saldoAwalData[currentYear] = data.saldoAwal || months.reduce((acc, month) => {
-                    acc[month] = month === 'Januari' ? 5000000 : 0;
+                    acc[month] = month === 'Januari' ? 0 : 0;
                     return acc;
                 }, {});
                 roadmapData[currentYear] = data.roadmap || months.reduce((acc, month) => {
@@ -506,7 +506,7 @@
         // Hitung saldo awal
         function calculateSaldoAwal(month) {
             if (month === 'Januari') {
-                return saldoAwalData[currentYear][month] || 5000000;
+                return saldoAwalData[currentYear][month] || 0;
             }
             const monthIndex = months.indexOf(month);
             const prevMonth = months[monthIndex - 1];
