@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Keuangan</title>
     <style>
-        /* CSS tetap sama seperti sebelumnya */
+        /* CSS tetap sama, tambah styling untuk saldo input */
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
@@ -86,6 +86,27 @@
             font-size: 1.2em;
             font-weight: bold;
             color: #FFD700;
+        }
+        .saldo-container {
+            margin-bottom: 20px;
+            background: #ffffff;
+            padding: 10px;
+            border: 2px solid #FF0000;
+            border-radius: 5px;
+            color: #000000;
+            width: fit-content;
+        }
+        .saldo-container label {
+            display: inline-block;
+            width: 120px;
+            font-weight: bold;
+        }
+        .saldo-container input {
+            padding: 5px;
+            border: 1px solid #FF0000;
+            border-radius: 5px;
+            width: 150px;
+            margin-right: 10px;
         }
         .modal {
             display: none;
@@ -197,6 +218,13 @@
             .container {
                 grid-template-columns: 1fr;
             }
+            .saldo-container {
+                width: 100%;
+            }
+            .saldo-container input {
+                width: 100%;
+                margin-bottom: 10px;
+            }
         }
     </style>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
@@ -241,6 +269,13 @@
 
         <!-- Halaman Pengeluaran -->
         <div id="pengeluaranPage" class="page">
+            <div class="saldo-container">
+                <label>Saldo Awal Cash:</label>
+                <input type="number" id="saldoCash" min="0" onchange="updateSaldo('cash')">
+                <br>
+                <label>Saldo Awal Crypto:</label>
+                <input type="number" id="saldoCrypto" min="0" onchange="updateSaldo('crypto')">
+            </div>
             <div class="container" id="pengeluaranContainer"></div>
             <div class="year-total">
                 Total Pengeluaran Cash Tahun <span id="pengeluaranYear">2025</span>: <span id="pengeluaranYearTotalCash">Rp0</span><br>
@@ -384,7 +419,7 @@
                 }, {});
             }
             if (!saldoAwalData[year]) {
-                saldoAwalData[year] = { cash: 0, crypto: 0 }; // Saldo awal terpisah
+                saldoAwalData[year] = { cash: 0, crypto: 0 };
             }
             if (!roadmapData[year]) {
                 roadmapData[year] = months.reduce((acc, month) => {
@@ -429,6 +464,7 @@
                     acc[month] = [];
                     return acc;
                 }, {});
+                updateSaldoDisplay();
                 if (currentPage === 'pemasukan') renderPemasukanCards();
                 else if (currentPage === 'pengeluaran') renderPengeluaranCards();
                 else renderRoadmap();
@@ -450,6 +486,24 @@
                     console.error('Error saving data:', error);
                     alert('Gagal menyimpan data ke Firebase.');
                 });
+            }
+        }
+
+        // Update display saldo
+        function updateSaldoDisplay() {
+            document.getElementById('saldoCash').value = saldoAwalData[currentYear].cash || 0;
+            document.getElementById('saldoCrypto').value = saldoAwalData[currentYear].crypto || 0;
+        }
+
+        // Update saldo saat input diubah
+        function updateSaldo(type) {
+            const value = parseInt(document.getElementById(`saldo${type.charAt(0).toUpperCase() + type.slice(1)}`).value) || 0;
+            if (value >= 0) {
+                saldoAwalData[currentYear][type] = value;
+                saveData();
+            } else {
+                alert('Saldo tidak boleh negatif!');
+                updateSaldoDisplay();
             }
         }
 
@@ -590,6 +644,7 @@
             });
 
             updatePengeluaranYearTotal();
+            updateSaldoDisplay();
         }
 
         // Render Roadmap
@@ -693,9 +748,19 @@
                 if (currentPage === 'pengeluaran') {
                     if (isAdding) {
                         if (tipe === 'Cash') {
-                            saldoAwalData[currentYear].cash -= field2;
+                            if (saldoAwalData[currentYear].cash >= field2) {
+                                saldoAwalData[currentYear].cash -= field2;
+                            } else {
+                                alert('Saldo Cash tidak cukup!');
+                                return;
+                            }
                         } else {
-                            saldoAwalData[currentYear].crypto -= field2;
+                            if (saldoAwalData[currentYear].crypto >= field2) {
+                                saldoAwalData[currentYear].crypto -= field2;
+                            } else {
+                                alert('Saldo Crypto tidak cukup!');
+                                return;
+                            }
                         }
                     } else {
                         // Kembalikan saldo lama
@@ -706,9 +771,19 @@
                         }
                         // Kurangi saldo baru
                         if (tipe === 'Cash') {
-                            saldoAwalData[currentYear].cash -= field2;
+                            if (saldoAwalData[currentYear].cash >= field2) {
+                                saldoAwalData[currentYear].cash -= field2;
+                            } else {
+                                alert('Saldo Cash tidak cukup!');
+                                return;
+                            }
                         } else {
-                            saldoAwalData[currentYear].crypto -= field2;
+                            if (saldoAwalData[currentYear].crypto >= field2) {
+                                saldoAwalData[currentYear].crypto -= field2;
+                            } else {
+                                alert('Saldo Crypto tidak cukup!');
+                                return;
+                            }
                         }
                     }
                 }
@@ -769,6 +844,13 @@
             const element = document.createElement('div');
             element.style.padding = '20px';
             element.innerHTML = `<h1 style="color: #000000;">${isPemasukan ? 'Pemasukan' : 'Pengeluaran'} ${currentYear}</h1>`;
+
+            if (!isPemasukan) {
+                element.innerHTML += `
+                    <p style="color: #000000;">Saldo Awal Cash: Rp${saldoAwalData[currentYear].cash.toLocaleString('id-ID')}</p>
+                    <p style="color: #000000;">Saldo Awal Crypto: Rp${saldoAwalData[currentYear].crypto.toLocaleString('id-ID')}</p>
+                `;
+            }
 
             monthsToDownload.forEach(month => {
                 const monthData = data[month] || [];
