@@ -53,21 +53,6 @@
             font-weight: bold;
             text-align: center;
         }
-        .card .saldo-awal {
-            margin-bottom: 10px;
-            font-weight: bold;
-            color: #FFD700;
-        }
-        .card .edit-saldo-btn {
-            background-color: #FFD700;
-            color: #000000;
-            padding: 5px 10px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-left: 10px;
-            font-size: 0.9em;
-        }
         table {
             width: 100%;
             border-collapse: collapse;
@@ -87,12 +72,12 @@
             background-color: #FF0000;
             color: #ffffff;
         }
-        .total, .sisa-saldo {
+        .total {
             font-weight: bold;
             margin-top: 10px;
             color: #000000;
         }
-        .total span, .sisa-saldo span {
+        .total span {
             color: #000000;
         }
         .year-total {
@@ -257,7 +242,10 @@
         <!-- Halaman Pengeluaran -->
         <div id="pengeluaranPage" class="page">
             <div class="container" id="pengeluaranContainer"></div>
-            <div class="year-total">Total Pengeluaran Tahun <span id="pengeluaranYear">2025</span>: <span id="pengeluaranYearTotal">Rp0</span></div>
+            <div class="year-total">
+                Total Pengeluaran Cash Tahun <span id="pengeluaranYear">2025</span>: <span id="pengeluaranYearTotalCash">Rp0</span><br>
+                Total Pengeluaran Crypto Tahun <span id="pengeluaranYearTotalCrypto">Rp0</span>
+            </div>
             <button class="download-btn" onclick="openDownloadModal('pengeluaran')">Download PDF</button>
         </div>
 
@@ -282,16 +270,6 @@
             <button class="save-btn" onclick="saveEdit()">Simpan</button>
             <button class="delete-btn" id="deleteBtn" onclick="deleteEntry()">Hapus</button>
             <button class="cancel-btn" onclick="closeModal()">Batal</button>
-        </div>
-    </div>
-
-    <!-- Modal untuk Edit Saldo Awal -->
-    <div class="modal" id="editSaldoModal">
-        <div class="modal-content">
-            <h3>Edit Saldo Awal</h3>
-            <input type="number" id="editSaldoAwal" placeholder="Saldo Awal (Rp)">
-            <button class="save-btn" onclick="saveSaldoAwal()">Simpan</button>
-            <button class="cancel-btn" onclick="closeSaldoModal()">Batal</button>
         </div>
     </div>
 
@@ -406,7 +384,7 @@
                 }, {});
             }
             if (!saldoAwalData[year]) {
-                saldoAwalData[year] = 0; // Saldo awal global
+                saldoAwalData[year] = { cash: 0, crypto: 0 }; // Saldo awal terpisah
             }
             if (!roadmapData[year]) {
                 roadmapData[year] = months.reduce((acc, month) => {
@@ -446,7 +424,7 @@
                     acc[month] = [];
                     return acc;
                 }, {});
-                saldoAwalData[currentYear] = data.saldoAwal !== undefined ? data.saldoAwal : 0;
+                saldoAwalData[currentYear] = data.saldoAwal || { cash: 0, crypto: 0 };
                 roadmapData[currentYear] = data.roadmap || months.reduce((acc, month) => {
                     acc[month] = [];
                     return acc;
@@ -497,15 +475,16 @@
             else renderRoadmap();
         }
 
-        // Hitung total
-        function calculateTotal(monthData, type) {
-            return monthData.reduce((sum, item) => sum + (type === 'pemasukan' ? item.pemasukan : item.jumlah), 0);
-        }
-
-        // Hitung saldo awal
-        function calculateSaldoAwal() {
-            const totalPengeluaran = months.reduce((sum, month) => sum + calculateTotal(pengeluaranData[currentYear][month] || [], 'pengeluaran'), 0);
-            return saldoAwalData[currentYear] - totalPengeluaran;
+        // Hitung total berdasarkan tipe
+        function calculateTotal(monthData, type, tipe = null) {
+            if (type === 'pemasukan') {
+                return monthData.reduce((sum, item) => sum + item.pemasukan, 0);
+            } else {
+                return monthData.reduce((sum, item) => {
+                    if (tipe && item.tipe !== tipe) return sum;
+                    return sum + item.jumlah;
+                }, 0);
+            }
         }
 
         // Render kartu untuk Pemasukan
@@ -562,8 +541,7 @@
         function renderPengeluaranCards() {
             const container = document.getElementById('pengeluaranContainer');
             container.innerHTML = '';
-            const globalSaldoAwal = calculateSaldoAwal();
-            months.forEach((month, index) => {
+            months.forEach(month => {
                 const monthData = pengeluaranData[currentYear][month] || [];
                 const card = document.createElement('div');
                 card.className = 'card';
@@ -578,9 +556,9 @@
                         </tr>
                     `).join('')
                     : '<tr><td colspan="4" class="empty-message">Belum ada pengeluaran</td></tr>';
-                const totalPengeluaran = calculateTotal(monthData, 'pengeluaran');
+                const totalCash = calculateTotal(monthData, 'pengeluaran', 'Cash');
+                const totalCrypto = calculateTotal(monthData, 'pengeluaran', 'Crypto');
                 card.innerHTML = `
-                    <div class="saldo-awal">Saldo Awal: Rp${globalSaldoAwal.toLocaleString('id-ID')}${index === 0 ? '<button class="edit-saldo-btn" onclick="openSaldoModal()">Edit</button>' : ''}</div>
                     <h2>${month.toUpperCase()}</h2>
                     <table>
                         <thead>
@@ -595,7 +573,8 @@
                             ${tableContent}
                         </tbody>
                     </table>
-                    <div class="total">Total Pengeluaran: <span>Rp${totalPengeluaran.toLocaleString('id-ID')}</span></div>
+                    <div class="total">Total Pengeluaran Cash: <span>Rp${totalCash.toLocaleString('id-ID')}</span></div>
+                    <div class="total">Total Pengeluaran Crypto: <span>Rp${totalCrypto.toLocaleString('id-ID')}</span></div>
                     <button class="add-btn" onclick="openAddModal('${month}', 'pengeluaran')">Tambah Pengeluaran</button>
                 `;
                 container.appendChild(card);
@@ -646,8 +625,10 @@
         }
 
         function updatePengeluaranYearTotal() {
-            const yearTotal = months.reduce((sum, month) => sum + calculateTotal(pengeluaranData[currentYear][month] || [], 'pengeluaran'), 0);
-            document.getElementById('pengeluaranYearTotal').textContent = `Rp${yearTotal.toLocaleString('id-ID')}`;
+            const yearTotalCash = months.reduce((sum, month) => sum + calculateTotal(pengeluaranData[currentYear][month] || [], 'pengeluaran', 'Cash'), 0);
+            const yearTotalCrypto = months.reduce((sum, month) => sum + calculateTotal(pengeluaranData[currentYear][month] || [], 'pengeluaran', 'Crypto'), 0);
+            document.getElementById('pengeluaranYearTotalCash').textContent = `Rp${yearTotalCash.toLocaleString('id-ID')}`;
+            document.getElementById('pengeluaranYearTotalCrypto').textContent = `Rp${yearTotalCrypto.toLocaleString('id-ID')}`;
         }
 
         // Modal untuk edit atau tambah data
@@ -697,14 +678,47 @@
 
             if (field1 && tanggal >= 1 && tanggal <= 31 && field2 > 0) {
                 const data = currentPage === 'pemasukan' ? pemasukanData[currentYear] : pengeluaranData[currentYear];
+                let oldAmount = 0;
+                let oldTipe = null;
+
+                if (!isAdding) {
+                    oldAmount = data[currentMonth][currentIndex].jumlah || 0;
+                    oldTipe = data[currentMonth][currentIndex].tipe;
+                }
+
                 const newEntry = currentPage === 'pemasukan' 
                     ? { nama: field1, tanggal, pemasukan: field2 }
                     : { kategori: field1, tanggal, tipe, jumlah: field2 };
+
+                if (currentPage === 'pengeluaran') {
+                    if (isAdding) {
+                        if (tipe === 'Cash') {
+                            saldoAwalData[currentYear].cash -= field2;
+                        } else {
+                            saldoAwalData[currentYear].crypto -= field2;
+                        }
+                    } else {
+                        // Kembalikan saldo lama
+                        if (oldTipe === 'Cash') {
+                            saldoAwalData[currentYear].cash += oldAmount;
+                        } else {
+                            saldoAwalData[currentYear].crypto += oldAmount;
+                        }
+                        // Kurangi saldo baru
+                        if (tipe === 'Cash') {
+                            saldoAwalData[currentYear].cash -= field2;
+                        } else {
+                            saldoAwalData[currentYear].crypto -= field2;
+                        }
+                    }
+                }
+
                 if (isAdding) {
                     data[currentMonth].push(newEntry);
                 } else {
                     data[currentMonth][currentIndex] = newEntry;
                 }
+
                 if (currentPage === 'pemasukan') renderPemasukanCards();
                 else renderPengeluaranCards();
                 saveData();
@@ -717,33 +731,19 @@
         function deleteEntry() {
             if (confirm('Yakin ingin menghapus data ini?')) {
                 const data = currentPage === 'pemasukan' ? pemasukanData[currentYear] : pengeluaranData[currentYear];
+                if (currentPage === 'pengeluaran') {
+                    const entry = data[currentMonth][currentIndex];
+                    if (entry.tipe === 'Cash') {
+                        saldoAwalData[currentYear].cash += entry.jumlah;
+                    } else {
+                        saldoAwalData[currentYear].crypto += entry.jumlah;
+                    }
+                }
                 data[currentMonth].splice(currentIndex, 1);
                 if (currentPage === 'pemasukan') renderPemasukanCards();
                 else renderPengeluaranCards();
                 saveData();
                 closeModal();
-            }
-        }
-
-        // Modal untuk edit saldo awal
-        function openSaldoModal() {
-            document.getElementById('editSaldoAwal').value = saldoAwalData[currentYear] || 0;
-            document.getElementById('editSaldoModal').style.display = 'flex';
-        }
-
-        function closeSaldoModal() {
-            document.getElementById('editSaldoModal').style.display = 'none';
-        }
-
-        function saveSaldoAwal() {
-            const saldoAwal = parseInt(document.getElementById('editSaldoAwal').value);
-            if (saldoAwal >= 0) {
-                saldoAwalData[currentYear] = saldoAwal;
-                renderPengeluaranCards();
-                saveData();
-                closeSaldoModal();
-            } else {
-                alert('Masukkan saldo awal yang valid (minimal 0)!');
             }
         }
 
@@ -785,10 +785,11 @@
                     `).join('')
                     : `<tr><td colspan="${isPemasukan ? 3 : 4}" style="color: #FF0000; text-align: center;">Belum ada data</td></tr>`;
 
+                const totalCash = calculateTotal(monthData, 'pengeluaran', 'Cash');
+                const totalCrypto = calculateTotal(monthData, 'pengeluaran', 'Crypto');
                 const total = calculateTotal(monthData, isPemasukan ? 'pemasukan' : 'pengeluaran');
                 const cardHtml = `
                     <div style="margin-bottom: 20px;">
-                        ${!isPemasukan ? `<p style="color: #FFD700;">Saldo Awal: Rp${calculateSaldoAwal().toLocaleString('id-ID')}</p>` : ''}
                         <h2 style="color: #000000;">${month.toUpperCase()}</h2>
                         <table style="width: 100%; border-collapse: collapse;">
                             <thead>
@@ -803,7 +804,12 @@
                                 ${tableContent}
                             </tbody>
                         </table>
-                        <p style="color: #000000; font-weight: bold;">${isPemasukan ? 'Total' : 'Total Pengeluaran'}: Rp${total.toLocaleString('id-ID')}</p>
+                        ${isPemasukan ? `
+                            <p style="color: #000000; font-weight: bold;">Total: Rp${total.toLocaleString('id-ID')}</p>
+                        ` : `
+                            <p style="color: #000000; font-weight: bold;">Total Pengeluaran Cash: Rp${totalCash.toLocaleString('id-ID')}</p>
+                            <p style="color: #000000; font-weight: bold;">Total Pengeluaran Crypto: Rp${totalCrypto.toLocaleString('id-ID')}</p>
+                        `}
                     </div>
                 `;
                 element.innerHTML += cardHtml;
